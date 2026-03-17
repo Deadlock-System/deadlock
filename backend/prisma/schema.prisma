@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
   engineType = "binary"
 }
 
@@ -7,10 +7,116 @@ datasource db {
   provider = "postgresql"
 }
 
+model Seniority {
+  id   Int    @id @default(autoincrement()) @db.SmallInt
+  name String
+
+  users User[]
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  password  String
-  createdAt DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  email           String   @unique
+  user_name       String   @unique
+  user_photo      String?
+  hashed_password String
+  createdAt       DateTime @default(now()) @db.Timestamp(3)
+  seniority_id    Int?     @db.SmallInt
+
+  seniority     Seniority?       @relation(fields: [seniority_id], references: [id])
+  posts         Post[]
+  likesPosts    Likes_Posts[]
+  postsSaves    Posts_Saves[]
+  likesComments Likes_Comments[]
+}
+
+model Post {
+  id        BigInt   @id @default(autoincrement())
+  title     String
+  anonymous Boolean
+  views     Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+
+  user_id Int
+  user    User @relation(fields: [user_id], references: [id])
+
+  snippets   Snippet[]
+  comments   Comment[]
+  languages  Languages_posts[]
+  likesPosts Likes_Posts[]
+  postsSaves Posts_Saves[]
+}
+
+model Language {
+  id   Int    @id @db.SmallInt
+  name String
+
+  snippets Snippet[]
+  posts    Languages_posts[]
+}
+
+model Languages_posts {
+  post_id     BigInt
+  language_id Int    @db.SmallInt
+
+  post     Post     @relation(fields: [post_id], references: [id])
+  language Language @relation(fields: [language_id], references: [id])
+
+  @@id([post_id, language_id])
+}
+
+model Snippet {
+  id      BigInt @id @default(autoincrement())
+  content String
+
+  post_id     BigInt
+  language_id Int    @db.SmallInt
+
+  post     Post     @relation(fields: [post_id], references: [id])
+  language Language @relation(fields: [language_id], references: [id])
+}
+
+model Comment {
+  id                BigInt   @id @default(autoincrement())
+  post_id           BigInt
+  parent_comment_id BigInt?
+  data_criacao      DateTime @default(now())
+  conteudo          String
+
+  post          Post             @relation(fields: [post_id], references: [id])
+  parent        Comment?         @relation("CommentToComment", fields: [parent_comment_id], references: [id])
+  replies       Comment[]        @relation("CommentToComment")
+  likesComments Likes_Comments[]
+}
+
+model Likes_Posts {
+  post_id BigInt
+  user_id Int
+  is_like    Boolean
+  
+  post Post @relation(fields: [post_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
+
+  @@id([post_id, user_id])
+}
+
+model Posts_Saves {
+  post_id BigInt
+  user_id Int
+
+  post Post @relation(fields: [post_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
+
+  @@id([post_id, user_id])
+}
+
+model Likes_Comments {
+  comment_id BigInt
+  user_id    Int
+  is_like    Boolean
+
+  comment Comment @relation(fields: [comment_id], references: [id])
+  user    User    @relation(fields: [user_id], references: [id])
+
+  @@id([comment_id, user_id])
 }
