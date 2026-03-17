@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
@@ -9,6 +10,7 @@ import { ConfigModule } from '@nestjs/config';
       envFilePath: process.env.DOCKER ? '.env.docker' : '.env',
       isGlobal: true,
     }),
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
