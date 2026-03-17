@@ -7,15 +7,8 @@ datasource db {
   provider = "postgresql"
 }
 
-model Seniority {
-  id   Int    @id @default(autoincrement()) @db.SmallInt
-  name String
-
-  users User[]
-}
-
 model User {
-  id              Int      @id @default(autoincrement())
+  id              String   @id @default(uuid())
   email           String   @unique
   user_name       String   @unique
   user_photo      String?
@@ -23,7 +16,6 @@ model User {
   createdAt       DateTime @default(now()) @db.Timestamp(3)
   seniority_id    Int?     @db.SmallInt
 
-  seniority     Seniority?       @relation(fields: [seniority_id], references: [id])
   posts         Post[]
   likesPosts    Likes_Posts[]
   postsSaves    Posts_Saves[]
@@ -31,14 +23,14 @@ model User {
 }
 
 model Post {
-  id        BigInt   @id @default(autoincrement())
+  id        String   @id @default(uuid())
   title     String
   anonymous Boolean
   views     Int      @default(0)
   createdAt DateTime @default(now()) @db.Timestamp(3)
 
-  user_id Int
-  user    User @relation(fields: [user_id], references: [id])
+  user_id String
+  user    User   @relation(fields: [user_id], references: [id])
 
   snippets   Snippet[]
   comments   Comment[]
@@ -48,7 +40,7 @@ model Post {
 }
 
 model Language {
-  id   Int    @id @db.SmallInt
+  id   Int    @id @default(autoincrement()) @db.SmallInt
   name String
 
   snippets Snippet[]
@@ -56,7 +48,7 @@ model Language {
 }
 
 model Languages_posts {
-  post_id     BigInt
+  post_id     String
   language_id Int    @db.SmallInt
 
   post     Post     @relation(fields: [post_id], references: [id])
@@ -66,10 +58,10 @@ model Languages_posts {
 }
 
 model Snippet {
-  id      BigInt @id @default(autoincrement())
+  id      String @id @default(uuid())
   content String
 
-  post_id     BigInt
+  post_id     String
   language_id Int    @db.SmallInt
 
   post     Post     @relation(fields: [post_id], references: [id])
@@ -77,9 +69,9 @@ model Snippet {
 }
 
 model Comment {
-  id                BigInt   @id @default(autoincrement())
-  post_id           BigInt
-  parent_comment_id BigInt?
+  id                String   @id @default(uuid())
+  post_id           String
+  parent_comment_id String?
   data_criacao      DateTime @default(now())
   conteudo          String
 
@@ -90,10 +82,10 @@ model Comment {
 }
 
 model Likes_Posts {
-  post_id BigInt
-  user_id Int
-  is_like    Boolean
-  
+  post_id String
+  user_id String
+  is_like Boolean
+
   post Post @relation(fields: [post_id], references: [id])
   user User @relation(fields: [user_id], references: [id])
 
@@ -101,8 +93,8 @@ model Likes_Posts {
 }
 
 model Posts_Saves {
-  post_id BigInt
-  user_id Int
+  post_id String
+  user_id String
 
   post Post @relation(fields: [post_id], references: [id])
   user User @relation(fields: [user_id], references: [id])
@@ -111,8 +103,8 @@ model Posts_Saves {
 }
 
 model Likes_Comments {
-  comment_id BigInt
-  user_id    Int
+  comment_id String
+  user_id    String
   is_like    Boolean
 
   comment Comment @relation(fields: [comment_id], references: [id])
