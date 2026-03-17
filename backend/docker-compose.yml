@@ -5,8 +5,8 @@ services:
       - .env.docker
     volumes:
       - .:/usr/src/app
-    command: npm run start:dev
-    container_name: backend
+    command: sh ./entrypoint.sh
+    container_name: deadlockBackend
     depends_on:
       - db
     environment:
@@ -24,7 +24,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - deadlock_postgres_volume:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  deadlock_postgres_volume:
