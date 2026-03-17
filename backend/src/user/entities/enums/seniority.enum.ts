@@ -1,0 +1,9 @@
+export enum Seniority {
+  NOT_SELECTED = 'NOT_SELECTED',
+  STUDENDT = 'STUDENDT',
+  JUNIOR = 'JUNIOR',
+  PLENO = 'PLENO',
+  SENIOR = 'SENIOR',
+  TECH_LEAD = 'TECH_LEAD',
+  C_LEVEL = 'C_LEVEL',
+}
