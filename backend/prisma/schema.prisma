@@ -7,6 +7,16 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Seniority {
+  NOT_SELECTED
+  STUDENDT
+  JUNIOR
+  PLENO
+  SENIOR
+  TECH_LEAD
+  C_LEVEL
+}
+
 model User {
   id              String   @id @default(uuid())
   email           String   @unique
@@ -14,7 +24,7 @@ model User {
   user_photo      String?
   hashed_password String
   createdAt       DateTime @default(now()) @db.Timestamp(3)
-  seniority_id    Int?     @db.SmallInt
+  seniority_id    Seniority @default(NOT_SELECTED)
 
   posts         Post[]
   likesPosts    Likes_Posts[]
