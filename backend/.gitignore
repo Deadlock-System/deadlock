@@ -37,3 +37,6 @@ lerna-debug.log*
 .tmp
 
 /generated/prisma
+
+# testing related
+coverage
