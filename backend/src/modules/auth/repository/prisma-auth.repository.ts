@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "src/module/prisma/prisma.service";
+import { PrismaService } from "src/modules/prisma/prisma.service";
 import { hash, compare } from 'bcrypt';
 import { RefreshTokenMapper } from "../mappers/auth.mapper";
 

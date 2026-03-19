@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { UserRepository } from "src/module/user/repository/user.repository";
+import { UserRepository } from "src/modules/user/repository/user.repository";
 import { SignInDto } from "../dto/sign-in.dto";
 import { compare } from "bcrypt";
 import { TokenService } from "../services/token-service";
