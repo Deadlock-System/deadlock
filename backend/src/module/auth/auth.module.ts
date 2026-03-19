@@ -5,11 +5,11 @@ import { GithubStrategy } from "./strategies/github.strategy";
 import { JwtModule } from "@nestjs/jwt";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { SignInUseCase } from "./useCases/sign-in.usecase";
-import { UserModule } from "src/user/user.module";
+import { UserModule } from "src/module/user/user.module";
 import { TokenService } from "./services/token-service";
 import { ConfigModule } from "@nestjs/config";
 import { AuthRepository } from "./repository/prisma-auth.repository";
-import { PrismaModule } from "src/prisma/prisma.module";
+import { PrismaModule } from "src/module/prisma/prisma.module";
 
 @Module({
     imports: [
