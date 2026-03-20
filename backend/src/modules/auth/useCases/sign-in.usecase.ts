@@ -4,6 +4,7 @@ import { AuthRepository } from "../repository/auth.repository";
 import { SignInDto } from "../dto/sign-in.dto";
 import { compare } from "bcrypt";
 import { TokenService } from "../services/token-service";
+import { InvalidCredentialException } from "../exceptions/auth.exceptions";
 
 @Injectable()
 export class SignInUseCase {
@@ -22,7 +23,7 @@ export class SignInUseCase {
             : false;
 
         if(!user || !passwordMatches) {
-            throw new UnauthorizedException('Credenciais inválidas');
+            throw new InvalidCredentialException();
         }
 
         const payload = {

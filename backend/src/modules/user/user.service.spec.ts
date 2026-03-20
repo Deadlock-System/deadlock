@@ -4,7 +4,9 @@ import { UserRepository } from './repository/user.repository';
 import { UserResponseDto } from './dto/user-response.dto';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import { BadRequestException, ConflictException } from '@nestjs/common';
+import { UserErrorCode } from 'src/common/exceptions/error-codes/user-error-codes';
+import { UserErrorMessages } from 'src/common/exceptions/error-messages/user-error-messages';
+import { EmailAlreadyExistsException, InvalidPasswordException, UsernameAlreadyExistsException } from './exceptions/user.exceptions';
 
 describe('UserService', () => {
   let service: UserService;
@@ -75,12 +77,14 @@ describe('UserService', () => {
         .mockResolvedValue(userEntityMock);
 
       await expect(service.create(createUserDtoMock)).rejects.toThrow(
-        ConflictException,
+        EmailAlreadyExistsException,
       );
 
-      await expect(service.create(createUserDtoMock)).rejects.toThrow(
-        'Esse e-mail já está em uso',
-      );
+      await expect(service.create(createUserDtoMock)).rejects.toMatchObject({
+        code: UserErrorCode.EMAIL_ALREADY_EXISTS,
+        message: UserErrorMessages.EMAIL_ALREADY_EXISTS,
+        status: 409,
+      });
 
       expect(findByEmailMethodSpy).toHaveBeenCalledWith(
         createUserDtoMock.email,
@@ -95,12 +99,14 @@ describe('UserService', () => {
         .mockResolvedValue(userEntityMock);
 
       await expect(service.create(createUserDtoMock)).rejects.toThrow(
-        ConflictException,
+        UsernameAlreadyExistsException,
       );
 
-      await expect(service.create(createUserDtoMock)).rejects.toThrow(
-        'Esse nome de usuário já está em uso',
-      );
+      await expect(service.create(createUserDtoMock)).rejects.toMatchObject({
+        code: UserErrorCode.USERNAME_ALREADY_EXISTS,
+        message: UserErrorMessages.USERNAME_ALREADY_EXISTS,
+        status: 409,
+      });
 
       expect(findByUsernameMethodSpy).toHaveBeenCalledWith(
         createUserDtoMock.username,
@@ -119,12 +125,14 @@ describe('UserService', () => {
       jest.spyOn(repository, 'findByUsername').mockResolvedValue(null);
 
       await expect(service.create(createUserDtoMock)).rejects.toThrow(
-        BadRequestException,
+        InvalidPasswordException,
       );
 
-      await expect(service.create(createUserDtoMock)).rejects.toThrow(
-        'As senhas não conferem',
-      );
+      await expect(service.create(createUserDtoMock)).rejects.toMatchObject({
+        code: UserErrorCode.INVALID_PASSWORD,
+        message: UserErrorMessages.INVALID_PASSWORD,
+        status: 400,
+      });
 
       expect(repository.create).not.toHaveBeenCalled();
     });
