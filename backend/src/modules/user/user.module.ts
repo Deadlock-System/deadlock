@@ -3,7 +3,7 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { UserRepository } from './repository/user.repository';
 import { PrismaRepository } from './repository/prisma-user.repository';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],
@@ -15,5 +15,6 @@ import { PrismaModule } from 'src/prisma/prisma.module';
       useClass: PrismaRepository,
     },
   ],
+  exports: [UserRepository],
 })
 export class UserModule {}

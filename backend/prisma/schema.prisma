@@ -30,6 +30,18 @@ model User {
   likesPosts    Likes_Posts[]
   postsSaves    Posts_Saves[]
   likesComments Likes_Comments[]
+
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id              String   @id @default(uuid())
+  token           String
+  expires_at      DateTime
+  createdAt       DateTime @default(now()) @db.Timestamp(3) 
+
+  user_id         String @unique
+  user            User @relation(fields: [user_id], references: [id])
 }
 
 model Post {
