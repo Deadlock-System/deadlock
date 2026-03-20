@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignInUseCase } from './useCases/sign-in.usecase';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -6,6 +6,8 @@ import { TokenService } from './services/token-service';
 import { AuthRepository } from './repository/auth.repository';
 import { UserRepository } from '../user/repository/user.repository';
 import { compare } from 'bcrypt';
+import { InvalidRefreshTokenException, RefreshTokenNotFoundException } from './exceptions/auth.exceptions';
+import { UserNotFoundException } from '../user/exceptions/user.exceptions';
 
 @Injectable()
 export class AuthService {
@@ -24,13 +26,13 @@ export class AuthService {
     const { userId, refreshToken } = refreshTokenDto;
 
     const refreshData = await this.authRepository.findByUserId(userId);
-    if(!refreshData) throw new UnauthorizedException('Refresh Token não encontrado');
+    if(!refreshData) throw new RefreshTokenNotFoundException();
 
     const isValid = await this.validateRefreshToken(refreshToken, refreshData.token);
-    if(!isValid) throw new UnauthorizedException('Refresh token inválido ou expirado');
+    if(!isValid) throw new InvalidRefreshTokenException();
   
     const userData = await this.userRepository.findByUserId(userId);
-    if(!userData) throw new UnauthorizedException('Usuário não encontrado');
+    if(!userData) throw new UserNotFoundException();
 
     const payload = { sub: userId, username: userData.username };
     const accessToken = this.tokenService.generateAccessToken(payload);

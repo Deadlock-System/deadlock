@@ -9,6 +9,7 @@ import { UserRepository } from './repository/user.repository';
 import { User } from './entities/user.entity';
 import { hash } from 'bcrypt';
 import { UserResponseDto } from './dto/user-response.dto';
+import { EmailAlreadyExistsException, InvalidPasswordException, UsernameAlreadyExistsException } from './exceptions/user.exceptions';
 
 @Injectable()
 export class UserService {
@@ -20,7 +21,7 @@ export class UserService {
     );
 
     if (duplicatedEmail) {
-      throw new ConflictException('Esse e-mail já está em uso');
+      throw new EmailAlreadyExistsException();
     }
 
     const duplicatedUsername = await this.repository.findByUsername(
@@ -28,11 +29,11 @@ export class UserService {
     );
 
     if (duplicatedUsername) {
-      throw new ConflictException('Esse nome de usuário já está em uso');
+      throw new UsernameAlreadyExistsException();
     }
 
     if (createUserDto.password !== createUserDto.confirmPassword) {
-      throw new BadRequestException('As senhas não conferem');
+      throw new InvalidPasswordException();
     }
 
     const user = new User({
