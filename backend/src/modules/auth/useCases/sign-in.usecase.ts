@@ -1,9 +1,9 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { UserRepository } from "src/modules/user/repository/user.repository";
+import { AuthRepository } from "../repository/auth.repository";
 import { SignInDto } from "../dto/sign-in.dto";
 import { compare } from "bcrypt";
 import { TokenService } from "../services/token-service";
-import { AuthRepository } from "../repository/prisma-auth.repository";
 
 @Injectable()
 export class SignInUseCase {

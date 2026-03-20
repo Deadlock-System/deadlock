@@ -4,4 +4,8 @@ export class RefreshToken {
   token: string;
   expiresAt: Date;
   createdAt: Date;
+
+  constructor(partial: Partial<RefreshToken>) {
+    Object.assign(this, partial);
+  }
 }

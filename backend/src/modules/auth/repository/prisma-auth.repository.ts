@@ -1,10 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/modules/prisma/prisma.service";
-import { hash, compare } from 'bcrypt';
+import { hash } from 'bcrypt';
 import { RefreshTokenMapper } from "../mappers/auth.mapper";
+import { AuthRepository as AuthRepositoryInterface } from "./auth.repository";
 
 @Injectable()
-export class AuthRepository {
+export class PrismaAuthRepository  implements AuthRepositoryInterface {
     constructor(
         private prisma: PrismaService
     ) {}
@@ -28,17 +29,12 @@ export class AuthRepository {
     }
 
     async findByUserId(userId: string){
-        const prismaToken = await this.prisma.refreshToken.findUnique({ 
+        const refreshTokenData = await this.prisma.refreshToken.findUnique({ 
             where: { user_id: userId },
-            include: { user: true }
         });
-        if(!prismaToken) return null;
-        return prismaToken;
-    }
+        
+        if(!refreshTokenData) return null;
 
-    async validateToken(userId: string, token: string): Promise<boolean> {
-        const data = await this.findByUserId(userId);
-        if (!data) return false;
-        return compare(token, data.token);
+        return RefreshTokenMapper.toDomain(refreshTokenData);
     }
 }
