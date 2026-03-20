@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -63,8 +64,41 @@ export class UserService {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(updateUserDto: UpdateUserDto, userId: string) {
+    const userData = await this.repository.findByUserId(userId);
+
+    if (!userData) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    if (
+      updateUserDto.username &&
+      userData.username !== updateUserDto.username
+    ) {
+      const duplicatedUsername = await this.repository.findByUsername(
+        updateUserDto.username,
+      );
+
+      if (duplicatedUsername) {
+        throw new ConflictException('Esse nome de usuário já está em uso');
+      }
+    }
+
+    const updateUserData = {
+      ...userData,
+      ...updateUserDto,
+    };
+
+    const updatedUser = await this.repository.update(updateUserData);
+
+    return new UserResponseDto({
+      id: updatedUser.id,
+      email: updatedUser.email,
+      username: updatedUser.username,
+      userPhoto: updatedUser.userPhoto,
+      seniorityId: updatedUser.seniorityId,
+      createdAt: updatedUser.createdAt,
+    });
   }
 
   remove(id: number) {
