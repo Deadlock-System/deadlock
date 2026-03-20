@@ -42,6 +42,7 @@ export class PrismaRepository implements UserRepository {
 
     return UserMapper.toDomain(user);
   }
+
   async findByUserId(userId: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({
       where: {
@@ -54,5 +55,16 @@ export class PrismaRepository implements UserRepository {
     }
 
     return UserMapper.toDomain(user);
+  }
+
+  async update(user: User): Promise<User> {
+    const updatedUser = await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: UserMapper.toPrisma(user),
+    });
+
+    return UserMapper.toDomain(updatedUser);
   }
 }
