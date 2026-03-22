@@ -1,0 +1,203 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Poppins, sans-serif;
+}
+
+.registerPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  padding: 0;
+}
+
+.registerCard {
+  width: 100%;
+  min-height: 100vh;
+  background: #ffffff;
+  border-radius: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 0.42fr 0.58fr;
+  box-shadow: none;
+}
+
+.registerAside {
+  background: #263f4c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+
+.registerLogo {
+  width: min(320px, 80%);
+  height: auto;
+  object-fit: contain;
+  background: transparent;
+}
+
+.registerContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 40px;
+}
+
+.registerForm {
+  width: 100%;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+.registerTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #263f4c;
+}
+
+.registerOauthRow {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.registerOauthFallback {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(38, 63, 76, 0.35);
+  background: #ffffff;
+  color: #263f4c;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.registerOauthFallback:focus-visible {
+  outline: 3px solid rgba(38, 63, 76, 0.35);
+  outline-offset: 3px;
+}
+
+.registerOauthGithub {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(38, 63, 76, 0.35);
+  background: #ffffff;
+  color: #263f4c;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.registerOauthGithub:hover {
+  filter: brightness(0.98);
+}
+
+.registerOauthGithub:focus-visible {
+  outline: 3px solid rgba(38, 63, 76, 0.35);
+  outline-offset: 3px;
+}
+
+.registerOauthGithubIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.registerGrid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 18px 36px;
+  justify-items: center;
+  align-items: center;
+}
+
+.registerGridFull {
+  grid-column: 1 / -1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.registerGridFull > * {
+  width: min(300px, 100%);
+}
+
+.registerSubmit {
+  width: 200px;
+  height: 48px;
+  border-radius: 999px;
+  border: none;
+  background: #263f4c;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: filter 120ms ease, transform 80ms ease;
+}
+
+.registerSubmit:hover {
+  filter: brightness(1.06);
+}
+
+.registerSubmit:active {
+  transform: translateY(1px);
+}
+
+.registerSubmit:focus-visible {
+  outline: 3px solid rgba(38, 63, 76, 0.35);
+  outline-offset: 3px;
+}
+
+@media (max-width: 860px) {
+  .registerCard {
+    grid-template-columns: 1fr;
+    border-radius: 0;
+    min-height: 100vh;
+  }
+
+  .registerAside {
+    display: none;
+  }
+
+  .registerContent {
+    padding: 48px 18px;
+  }
+
+  .registerGrid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .registerGridFull > * {
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .registerSubmit {
+    width: min(260px, 100%);
+  }
+}
