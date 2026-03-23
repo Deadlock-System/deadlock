@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { SignInUseCase } from './useCases/sign-in.usecase';
 import { TokenService } from './services/token-service';
-import { UnauthorizedException } from '@nestjs/common';
 import { AuthRepository } from './repository/auth.repository';
 import { hash } from 'bcrypt';
 import {
@@ -14,6 +13,8 @@ import {
   mockTokenService,
 } from './mocks/auth.mocks';
 import { UserRepository } from '../user/repository/user.repository';
+import { AuthErrorCode } from 'src/common/exceptions/error-codes/auth-error-codes';
+import { AuthErrorMessages } from 'src/common/exceptions/error-messages/auth-error-messages';
 
 //! Mock User
 const mockUserRepository = {
@@ -69,9 +70,11 @@ describe('AuthService', () => {
         expiresAt: new Date(Date.now() + 9999 * 60 * 60),
       });
 
-      await expect(service.refreshToken(mockRefreshDto)).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.refreshToken(mockRefreshDto)).rejects.toMatchObject({
+        code: AuthErrorCode.INVALID_REFRESH_TOKEN,
+        message: AuthErrorMessages.INVALID_REFRESH_TOKEN,
+        status: 401,
+      });
     });
 
     it('should return new tokens if valid', async () => {
