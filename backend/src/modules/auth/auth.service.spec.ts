@@ -102,7 +102,7 @@ describe('AuthService', () => {
 
       expect(result).toEqual({
         accessToken: 'accessToken',
-        newRefreshToken: 'newRefreshToken',
+        refreshToken: 'newRefreshToken',
       });
 
       expect(mockAuthRepository.findByUserId).toHaveBeenCalledWith(
