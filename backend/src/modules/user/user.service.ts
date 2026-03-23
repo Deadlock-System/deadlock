@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { hash } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
@@ -11,10 +11,15 @@ import {
   UserNotFoundException,
 } from './exceptions/user.exceptions';
 import { UserRepository } from './repository/user.repository';
+import { UpdatePasswordDto } from './dto/update-password.dto';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class UserService {
-  constructor(private repository: UserRepository) {}
+  constructor(
+    private repository: UserRepository,
+    private authService: AuthService,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const duplicatedEmail = await this.repository.findByEmail(
@@ -100,6 +105,42 @@ export class UserService {
       seniorityId: updatedUser.seniorityId,
       createdAt: updatedUser.createdAt,
     });
+  }
+
+  async updatePassword(updatePasswordDto: UpdatePasswordDto, userId: string) {
+    const userData = await this.repository.findByUserId(userId);
+
+    if (!userData) {
+      throw new UserNotFoundException();
+    }
+
+    const isCurrentPasswordValid = await compare(
+      updatePasswordDto.currentPassword,
+      userData.hashedPassword,
+    );
+    if (!isCurrentPasswordValid) {
+      throw new InvalidPasswordException();
+    }
+
+    if (updatePasswordDto.password !== updatePasswordDto.confirmPassword) {
+      throw new InvalidPasswordException();
+    }
+
+    const hashedNewPassword = await hash(updatePasswordDto.password, 10);
+
+    await this.repository.updatePasswordAndRevokeTokens(
+      userId,
+      hashedNewPassword,
+    );
+
+    const { accessToken, refreshToken } =
+      await this.authService.generateAuthTokens(userId, userData.username);
+
+    return {
+      message: 'Senha redefinida com sucesso',
+      accessToken,
+      refreshToken,
+    };
   }
 
   remove(id: number) {
