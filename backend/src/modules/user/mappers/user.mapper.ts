@@ -1,3 +1,4 @@
+import { UserResponseDto } from '../dto/user-response.dto';
 import { Seniority } from '../entities/enums/seniority.enum';
 import { User } from '../entities/user.entity';
 import { User as UserRaw } from '@prisma/client';
@@ -25,5 +26,16 @@ export class UserMapper {
       createdAt: user.createdAt,
       seniority_id: user.seniorityId,
     };
+  }
+
+  static toResponse(user: User): UserResponseDto {
+    return new UserResponseDto({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      userPhoto: user.userPhoto,
+      createdAt: user.createdAt,
+      seniorityId: user.seniorityId,
+    });
   }
 }

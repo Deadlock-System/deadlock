@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { compare, hash } from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserResponseDto } from './dto/user-response.dto';
 import { User } from './entities/user.entity';
 import {
   EmailAlreadyExistsException,
@@ -13,6 +12,7 @@ import {
 import { UserRepository } from './repository/user.repository';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { AuthService } from '../auth/auth.service';
+import { UserMapper } from './mappers/user.mapper';
 
 @Injectable()
 export class UserService {
@@ -52,14 +52,7 @@ export class UserService {
 
     const createdUser = await this.repository.create(user);
 
-    return new UserResponseDto({
-      id: createdUser.id,
-      email: createdUser.email,
-      username: createdUser.username,
-      userPhoto: createdUser.userPhoto,
-      seniorityId: createdUser.seniorityId,
-      createdAt: createdUser.createdAt,
-    });
+    return UserMapper.toResponse(createdUser);
   }
 
   findAll() {
@@ -97,14 +90,7 @@ export class UserService {
 
     const updatedUser = await this.repository.update(updateUserData);
 
-    return new UserResponseDto({
-      id: updatedUser.id,
-      email: updatedUser.email,
-      username: updatedUser.username,
-      userPhoto: updatedUser.userPhoto,
-      seniorityId: updatedUser.seniorityId,
-      createdAt: updatedUser.createdAt,
-    });
+    return UserMapper.toResponse(updatedUser);
   }
 
   async updatePassword(updatePasswordDto: UpdatePasswordDto, userId: string) {
