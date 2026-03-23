@@ -1,19 +1,16 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { hash } from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserRepository } from './repository/user.repository';
-import { User } from './entities/user.entity';
-import { hash } from 'bcrypt';
 import { UserResponseDto } from './dto/user-response.dto';
+import { User } from './entities/user.entity';
 import {
   EmailAlreadyExistsException,
   InvalidPasswordException,
   UsernameAlreadyExistsException,
+  UserNotFoundException,
 } from './exceptions/user.exceptions';
+import { UserRepository } from './repository/user.repository';
 
 @Injectable()
 export class UserService {
@@ -72,7 +69,7 @@ export class UserService {
     const userData = await this.repository.findByUserId(userId);
 
     if (!userData) {
-      throw new NotFoundException('Usuário não encontrado');
+      throw new UserNotFoundException();
     }
 
     if (
@@ -84,7 +81,7 @@ export class UserService {
       );
 
       if (duplicatedUsername) {
-        throw new ConflictException('Esse nome de usuário já está em uso');
+        throw new UsernameAlreadyExistsException();
       }
     }
 
