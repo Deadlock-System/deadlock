@@ -1,7 +1,8 @@
 import type { RegisterType } from "../types/RegisterType";
+import { env } from '../config/env'
 
 export async function createUser(data: RegisterType) {
-  const response = await fetch("http://localhost:3000/users", {
+  const response = await fetch(`${env.apiURL}/users`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -10,6 +11,7 @@ export async function createUser(data: RegisterType) {
   });
 
   const result = await response.json();
+  
 
   if (!response.ok) {
     throw new Error(result.message || "Erro ao cadastrar usuário");
@@ -19,7 +21,7 @@ export async function createUser(data: RegisterType) {
 }
 
 export async function registerWithGoogle(credential: string) {
-  const response = await fetch("http://localhost:3000/auth/google", {
+  const response = await fetch(`${env.apiURL}/auth/google`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

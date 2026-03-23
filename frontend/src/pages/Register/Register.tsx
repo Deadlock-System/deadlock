@@ -7,6 +7,8 @@ import Select from "../../components/Select/Select";
 
 import logo from "../../assets/logo-deadlock-sem-fundo.png";
 import "./Register.css";
+import { getErrorMessage } from "../../utils/errorMessage";
+import { env } from "../../config/env";
 
 type FormState = {
   username: string;
@@ -49,12 +51,7 @@ export default function Register() {
 
       alert("Usuário cadastrado com sucesso!");
     } catch (error: unknown) {
-      const message =
-        typeof error === "object" && error !== null && "message" in error
-          ? String((error as { message: unknown }).message)
-          : "Erro ao cadastrar usuário";
-
-      alert(message);
+        alert(getErrorMessage(error, "Erro ao cadastrar usuário"));
     }
   };
 
@@ -74,12 +71,7 @@ export default function Register() {
       }
       alert("Usuário cadastrado com sucesso!");
     } catch (error: unknown) {
-      const message =
-        typeof error === "object" && error !== null && "message" in error
-          ? String((error as { message: unknown }).message)
-          : "Erro ao cadastrar com Google";
-
-      alert(message);
+        alert(getErrorMessage(error, "Erro ao cadastrar com Google"));
     }
   };
 
@@ -160,12 +152,12 @@ export default function Register() {
                   value={form.seniorityId}
                   onChange={handleChange}
                   options={[
-                    { label: "STUDENDT", value: "STUDENDT" },
-                    { label: "JUNIOR", value: "JUNIOR" },
-                    { label: "PLENO", value: "PLENO" },
-                    { label: "SENIOR", value: "SENIOR" },
-                    { label: "TECH_LEAD", value: "TECH_LEAD" },
-                    { label: "C_LEVEL", value: "C_LEVEL" },
+                    { label: "Estudante", value: "STUDENDT" },
+                    { label: "Junior", value: "JUNIOR" },
+                    { label: "Pleno", value: "PLENO" },
+                    { label: "Senior", value: "SENIOR" },
+                    { label: "Tech lead", value: "TECH_LEAD" },
+                    { label: "C Level", value: "C_LEVEL" },
                   ]}
                 />
               </div>
@@ -199,7 +191,7 @@ export default function Register() {
                 </button>
               )}
 
-              <a className="registerOauthGithub" href="http://localhost:3000/auth/github">
+              <a className="registerOauthGithub" href={`${env.apiURL}/auth/github`}>
                 <span className="registerOauthGithubIcon" aria-hidden="true">
                   <svg
                     width="18"
