@@ -9,7 +9,7 @@ import {
   mockSignInResponse,
   mockRefreshDto,
   mockAuthRepository,
-  mockSignInUseCase, 
+  mockSignInUseCase,
   mockTokenService,
 } from './mocks/auth.mocks';
 import { UserRepository } from '../user/repository/user.repository';
@@ -78,7 +78,7 @@ describe('AuthService', () => {
     });
 
     it('should return new tokens if valid', async () => {
-      const token = 'asdlkaoskdpoaskd'
+      const token = 'asdlkaoskdpoaskd';
       const hashedToken = await hash(token, 10);
 
       const refreshData = {

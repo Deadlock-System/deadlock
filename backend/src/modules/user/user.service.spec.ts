@@ -6,7 +6,11 @@ import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserErrorCode } from 'src/common/exceptions/error-codes/user-error-codes';
 import { UserErrorMessages } from 'src/common/exceptions/error-messages/user-error-messages';
-import { EmailAlreadyExistsException, InvalidPasswordException, UsernameAlreadyExistsException } from './exceptions/user.exceptions';
+import {
+  EmailAlreadyExistsException,
+  InvalidPasswordException,
+  UsernameAlreadyExistsException,
+} from './exceptions/user.exceptions';
 
 describe('UserService', () => {
   let service: UserService;

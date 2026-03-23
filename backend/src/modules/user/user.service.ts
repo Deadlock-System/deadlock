@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -10,7 +9,11 @@ import { UserRepository } from './repository/user.repository';
 import { User } from './entities/user.entity';
 import { hash } from 'bcrypt';
 import { UserResponseDto } from './dto/user-response.dto';
-import { EmailAlreadyExistsException, InvalidPasswordException, UsernameAlreadyExistsException } from './exceptions/user.exceptions';
+import {
+  EmailAlreadyExistsException,
+  InvalidPasswordException,
+  UsernameAlreadyExistsException,
+} from './exceptions/user.exceptions';
 
 @Injectable()
 export class UserService {

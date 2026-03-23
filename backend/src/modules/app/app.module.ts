@@ -14,11 +14,13 @@ import { APP_GUARD } from '@nestjs/core';
       isGlobal: true,
     }),
     ThrottlerModule.forRoot({
-      throttlers: [{
-        ttl: 60000,
-        limit: 20,
-        blockDuration: 30000,
-      }]
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 20,
+          blockDuration: 30000,
+        },
+      ],
     }),
     UserModule,
     AuthModule,
