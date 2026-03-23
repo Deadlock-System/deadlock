@@ -25,6 +25,17 @@ export class AuthService {
     return await this.signInUseCase.execute(signInDto);
   }
 
+  async generateAuthTokens(userId: string, username: string) {
+    const payload = { sub: userId, username };
+
+    const accessToken = this.tokenService.generateAccessToken(payload);
+    const refreshToken = this.tokenService.generateRefreshToken(payload);
+
+    await this.authRepository.refreshTokenRegister(userId, refreshToken);
+
+    return { accessToken, refreshToken };
+  }
+
   async refreshToken(refreshTokenDto: RefreshTokenDto) {
     const { userId, refreshToken } = refreshTokenDto;
 
@@ -40,13 +51,9 @@ export class AuthService {
     const userData = await this.userRepository.findByUserId(userId);
     if (!userData) throw new UserNotFoundException();
 
-    const payload = { sub: userId, username: userData.username };
-    const accessToken = this.tokenService.generateAccessToken(payload);
-    const newRefreshToken = this.tokenService.generateRefreshToken(payload);
+    const authTokens = await this.generateAuthTokens(userId, userData.username);
 
-    await this.authRepository.refreshTokenRegister(userId, newRefreshToken);
-
-    return { accessToken, newRefreshToken };
+    return authTokens;
   }
 
   private async validateRefreshToken(
