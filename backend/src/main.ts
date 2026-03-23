@@ -8,10 +8,22 @@ import { RequestErrorMessages } from './common/exceptions/error-messages/request
 import { SanitizePipe } from './common/pipes/sanitize.pipe';
 import helmet from 'helmet';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { apiReference } from '@scalar/nestjs-api-reference';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: [`'self'`],
+          styleSrc: [`'self'`, `'unsafe-inline'`],
+          imgSrc: [`'self'`, 'data:', 'validator.swagger.io'],
+          scriptSrc: [`'self'`, `https: 'unsafe-inline'`],
+        },
+      },
+    }),
+  );
 
   app.enableCors({
     origin: '*',
@@ -39,7 +51,14 @@ async function bootstrap() {
     .build();
 
   const documentFactory = SwaggerModule.createDocument(app, configSwagger);
-  SwaggerModule.setup('docs', app, documentFactory);
+
+  app.use(
+    '/docs',
+    apiReference({
+      content: documentFactory,
+      theme: 'kepler',
+    }),
+  );
 
   app.useGlobalFilters(new HttpExceptionFilter());
   await app.listen(process.env.PORT ?? 3000);

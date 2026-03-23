@@ -1388,6 +1388,35 @@
   resolved "https://registry.npmjs.org/@prisma/studio-core/-/studio-core-0.21.1.tgz"
   integrity sha512-bOGqG/eMQtKC0XVvcVLRmhWWzm/I+0QUWqAEhEBtetpuS3k3V4IWqKGUONkAIT223DNXJMxMtZp36b1FmcdPeg==
 
+"@scalar/core@0.4.4":
+  version "0.4.4"
+  resolved "https://registry.yarnpkg.com/@scalar/core/-/core-0.4.4.tgz#962af07681072c6222c3f59b6fc98562b458eee5"
+  integrity sha512-eXIG0opyQn45FzpTp0dAWFP1Vjcx+helgUAsa0uN36tyUR7DSmz2kRwHqqedzvPWryeRCKPz7/vwzKpETZp5lg==
+  dependencies:
+    "@scalar/types" "0.7.4"
+
+"@scalar/helpers@0.4.2":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/@scalar/helpers/-/helpers-0.4.2.tgz#678e589dd90f5f069a996c1f455117a1c2a009a4"
+  integrity sha512-IrgrGVSahCfYDNWITazz4Q1BOndp5eEzlimRkfxiYn++KqeWyLfALyym1omqcdKGYtiSx1KIbKaUJL9vkjaN7w==
+
+"@scalar/nestjs-api-reference@^1.1.4":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@scalar/nestjs-api-reference/-/nestjs-api-reference-1.1.4.tgz#d2fa480643e13333fb9d5028625aabeced19e39e"
+  integrity sha512-iJxFpxmljXaMqy81KbX+yIlo/VmEes3ZhQkSlDXl1YV70klZ9olQ+znst3/K2SQPwDSSET8OASf4C5kaTG0Qcw==
+  dependencies:
+    "@scalar/core" "0.4.4"
+
+"@scalar/types@0.7.4":
+  version "0.7.4"
+  resolved "https://registry.yarnpkg.com/@scalar/types/-/types-0.7.4.tgz#c0cfd2914bc1367a3fbd4b051fc3ad17c4f64788"
+  integrity sha512-1o9uf42lZ9YD0XP/HMWrwXN0unx6vFTTgtduA1F28Yloea9Pfv9N2R/t0wO91iSIzw4+NubEFolunbdb2QcgHA==
+  dependencies:
+    "@scalar/helpers" "0.4.2"
+    nanoid "^5.1.6"
+    type-fest "^5.3.1"
+    zod "^4.3.5"
+
 "@scarf/scarf@=1.4.0":
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@scarf/scarf/-/scarf-1.4.0.tgz#3bbb984085dbd6d982494538b523be1ce6562972"
@@ -4655,6 +4684,11 @@ nanoid@^3.3.11:
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.11.tgz#4f4f112cefbe303202f2199838128936266d185b"
   integrity sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==
 
+nanoid@^5.1.6:
+  version "5.1.7"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-5.1.7.tgz#a9f09a4ce73ba0b88830af36ee49666bad7827b6"
+  integrity sha512-ua3NDgISf6jdwezAheMOk4mbE1LXjm1DfMUDMuJf4AqxLFK3ccGpgWizwa5YV7Yz9EpXwEaWoRXSb/BnV0t5dQ==
+
 napi-postinstall@^0.3.0:
   version "0.3.4"
   resolved "https://registry.npmjs.org/napi-postinstall/-/napi-postinstall-0.3.4.tgz"
@@ -5743,6 +5777,11 @@ synckit@^0.11.12, synckit@^0.11.8:
   dependencies:
     "@pkgr/core" "^0.2.9"
 
+tagged-tag@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/tagged-tag/-/tagged-tag-1.0.0.tgz#a0b5917c2864cba54841495abfa3f6b13edcf4d6"
+  integrity sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==
+
 tapable@^2.2.1, tapable@^2.3.0:
   version "2.3.0"
   resolved "https://registry.npmjs.org/tapable/-/tapable-2.3.0.tgz"
@@ -5921,6 +5960,13 @@ type-fest@^4.41.0:
   version "4.41.0"
   resolved "https://registry.npmjs.org/type-fest/-/type-fest-4.41.0.tgz"
   integrity sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==
+
+type-fest@^5.3.1:
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-5.5.0.tgz#78fca72f3a1f9ec964e6ae260db492b070c56f3b"
+  integrity sha512-PlBfpQwiUvGViBNX84Yxwjsdhd1TUlXr6zjX7eoirtCPIr08NAmxwa+fcYBTeRQxHo9YC9wwF3m9i700sHma8g==
+  dependencies:
+    tagged-tag "^1.0.0"
 
 type-is@^1.6.18:
   version "1.6.18"
@@ -6261,3 +6307,8 @@ zeptomatch@2.1.0:
   dependencies:
     grammex "^3.1.11"
     graphmatch "^1.1.0"
+
+zod@^4.3.5:
+  version "4.3.6"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-4.3.6.tgz#89c56e0aa7d2b05107d894412227087885ab112a"
+  integrity sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==
