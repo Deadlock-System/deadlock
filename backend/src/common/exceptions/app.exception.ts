@@ -9,7 +9,11 @@ interface AppExceptionParams {
 export class AppException extends HttpException {
   public readonly code: string;
 
-  constructor({ code, message, status = HttpStatus.BAD_REQUEST }: AppExceptionParams) {
+  constructor({
+    code,
+    message,
+    status = HttpStatus.BAD_REQUEST,
+  }: AppExceptionParams) {
     super({ code, message }, status);
     this.code = code;
   }

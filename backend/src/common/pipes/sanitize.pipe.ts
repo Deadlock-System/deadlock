@@ -12,12 +12,12 @@ export class SanitizePipe implements PipeTransform {
       return sanitizeHtml(value, {
         allowedTags: [],
         allowedAttributes: {},
-        disallowedTagsMode: 'recursiveEscape'
+        disallowedTagsMode: 'recursiveEscape',
       });
     }
 
     if (Array.isArray(value)) {
-      return value.map(item => this.transform(item));
+      return value.map((item) => this.transform(item));
     }
 
     if (typeof value === 'object') {

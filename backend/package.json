@@ -34,6 +34,7 @@
     "@nestjs/throttler": "^6.5.0",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.5.0",
+    "@scalar/nestjs-api-reference": "^1.1.4",
     "@types/sanitize-html": "^2.16.1",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",

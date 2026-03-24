@@ -1,19 +1,25 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { compare, hash } from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserRepository } from './repository/user.repository';
 import { User } from './entities/user.entity';
-import { hash } from 'bcrypt';
-import { UserResponseDto } from './dto/user-response.dto';
-import { EmailAlreadyExistsException, InvalidPasswordException, UsernameAlreadyExistsException } from './exceptions/user.exceptions';
+import {
+  EmailAlreadyExistsException,
+  InvalidPasswordException,
+  UsernameAlreadyExistsException,
+  UserNotFoundException,
+} from './exceptions/user.exceptions';
+import { UserRepository } from './repository/user.repository';
+import { UpdatePasswordDto } from './dto/update-password.dto';
+import { AuthService } from '../auth/auth.service';
+import { UserMapper } from './mappers/user.mapper';
 
 @Injectable()
 export class UserService {
-  constructor(private repository: UserRepository) {}
+  constructor(
+    private repository: UserRepository,
+    private authService: AuthService,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const duplicatedEmail = await this.repository.findByEmail(
@@ -46,14 +52,7 @@ export class UserService {
 
     const createdUser = await this.repository.create(user);
 
-    return new UserResponseDto({
-      id: createdUser.id,
-      email: createdUser.email,
-      username: createdUser.username,
-      userPhoto: createdUser.userPhoto,
-      seniorityId: createdUser.seniorityId,
-      createdAt: createdUser.createdAt,
-    });
+    return UserMapper.toResponse(createdUser);
   }
 
   findAll() {
@@ -64,8 +63,70 @@ export class UserService {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(updateUserDto: UpdateUserDto, userId: string) {
+    const userData = await this.repository.findByUserId(userId);
+
+    if (!userData) {
+      throw new UserNotFoundException();
+    }
+
+    if (
+      updateUserDto.username &&
+      userData.username !== updateUserDto.username
+    ) {
+      const duplicatedUsername = await this.repository.findByUsername(
+        updateUserDto.username,
+      );
+
+      if (duplicatedUsername) {
+        throw new UsernameAlreadyExistsException();
+      }
+    }
+
+    const updateUserData = {
+      ...userData,
+      ...updateUserDto,
+    };
+
+    const updatedUser = await this.repository.update(updateUserData);
+
+    return UserMapper.toResponse(updatedUser);
+  }
+
+  async updatePassword(updatePasswordDto: UpdatePasswordDto, userId: string) {
+    const userData = await this.repository.findByUserId(userId);
+
+    if (!userData) {
+      throw new UserNotFoundException();
+    }
+
+    const isCurrentPasswordValid = await compare(
+      updatePasswordDto.currentPassword,
+      userData.hashedPassword,
+    );
+    if (!isCurrentPasswordValid) {
+      throw new InvalidPasswordException();
+    }
+
+    if (updatePasswordDto.password !== updatePasswordDto.confirmPassword) {
+      throw new InvalidPasswordException();
+    }
+
+    const hashedNewPassword = await hash(updatePasswordDto.password, 10);
+
+    await this.repository.updatePasswordAndRevokeTokens(
+      userId,
+      hashedNewPassword,
+    );
+
+    const { accessToken, refreshToken } =
+      await this.authService.generateAuthTokens(userId, userData.username);
+
+    return {
+      message: 'Senha redefinida com sucesso',
+      accessToken,
+      refreshToken,
+    };
   }
 
   remove(id: number) {

@@ -1,4 +1,9 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 
 interface HttpExceptionResponse {
@@ -36,9 +41,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         : errorResponse.message
       : (exception as UnknownException)?.message;
 
-    const code =
-      errorResponse.code ||
-      (isHttp ? 'HTTP_ERROR' : 'ERROR');
+    const code = errorResponse.code || (isHttp ? 'HTTP_ERROR' : 'ERROR');
 
     response.status(status).json({
       status,

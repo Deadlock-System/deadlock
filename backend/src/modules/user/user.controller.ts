@@ -1,15 +1,19 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
-import { UserService } from './user.service';
+import { AuthGuard } from '@nestjs/passport';
+import { GetUserId } from '../auth/decorators/get-user-id.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserService } from './user.service';
 
 @Controller('users')
 export class UserController {
@@ -30,9 +34,19 @@ export class UserController {
     return this.userService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('me')
+  update(@Body() updateUserDto: UpdateUserDto, @GetUserId() userId: string) {
+    return this.userService.update(updateUserDto, userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('me/password')
+  updatePassword(
+    @Body() updatePasswordDto: UpdatePasswordDto,
+    @GetUserId() userId: string,
+  ) {
+    return this.userService.updatePassword(updatePasswordDto, userId);
   }
 
   @Delete(':id')
