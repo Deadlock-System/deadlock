@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignInResponseDto } from './dto/sign-in-response.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { GithubAuthGuard } from './guards/github-auth.guard';
 
 @Controller()
 export class AuthController {
@@ -17,4 +18,12 @@ export class AuthController {
   refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshToken(refreshTokenDto);
   }
+
+  @Get('auth/github')
+  @UseGuards(GithubAuthGuard)
+  async githubLogin() {}
+
+  @Get('auth/github/callback')
+  @UseGuards(GithubAuthGuard)
+  async githubCallback(@Req() req) {}
 }

@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from 'src/modules/prisma/prisma.module';
 import { AuthRepository } from './repository/auth.repository';
 import { PrismaAuthRepository } from './repository/prisma-auth.repository';
+import { OAuthLoginUseCase } from './useCases/oauth-login-usecase';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PrismaAuthRepository } from './repository/prisma-auth.repository';
     AuthService,
     SignInUseCase,
     GithubStrategy,
+    OAuthLoginUseCase,
     JwtStrategy,
     TokenService,
     { provide: AuthRepository, useClass: PrismaAuthRepository },
