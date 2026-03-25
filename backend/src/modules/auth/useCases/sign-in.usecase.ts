@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from 'src/modules/user/repository/user.repository';
-import { AuthRepository } from '../repository/auth.repository';
+import { UserRepository } from 'src/modules/user/repositories/user.repository';
+import { AuthRepository } from '../repositories/auth.repository';
 import { SignInDto } from '../dto/sign-in.dto';
 import { compare } from 'bcrypt';
 import { TokenService } from '../services/token-service';

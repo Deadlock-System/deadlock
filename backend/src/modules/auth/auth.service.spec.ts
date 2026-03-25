@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { SignInUseCase } from './useCases/sign-in.usecase';
 import { TokenService } from './services/token-service';
-import { AuthRepository } from './repository/auth.repository';
+import { AuthRepository } from './repositories/auth.repository';
 import { hash } from 'bcrypt';
 import {
   mockSignInDto,
@@ -12,7 +12,7 @@ import {
   mockSignInUseCase,
   mockTokenService,
 } from './mocks/auth.mocks';
-import { UserRepository } from '../user/repository/user.repository';
+import { UserRepository } from '../user/repositories/user.repository';
 import { AuthErrorCode } from 'src/common/exceptions/error-codes/auth-error-codes';
 import { AuthErrorMessages } from 'src/common/exceptions/error-messages/auth-error-messages';
 

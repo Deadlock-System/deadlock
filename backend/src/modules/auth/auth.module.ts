@@ -9,8 +9,8 @@ import { UserModule } from 'src/modules/user/user.module';
 import { TokenService } from './services/token-service';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from 'src/modules/prisma/prisma.module';
-import { AuthRepository } from './repository/auth.repository';
-import { PrismaAuthRepository } from './repository/prisma-auth.repository';
+import { AuthRepository } from './repositories/auth.repository';
+import { PrismaAuthRepository } from './repositories/prisma-auth.repository';
 import { OAuthLoginUseCase } from './useCases/oauth-login-usecase';
 
 @Module({
