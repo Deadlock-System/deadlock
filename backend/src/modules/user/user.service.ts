@@ -100,6 +100,8 @@ export class UserService {
       throw new UserNotFoundException();
     }
 
+    if (!userData?.hashedPassword) throw new InvalidPasswordException();
+
     const isCurrentPasswordValid = await compare(
       updatePasswordDto.currentPassword,
       userData.hashedPassword,

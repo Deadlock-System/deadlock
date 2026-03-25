@@ -1,7 +1,7 @@
 import { UserResponseDto } from '../dto/user-response.dto';
 import { Seniority } from '../entities/enums/seniority.enum';
 import { User } from '../entities/user.entity';
-import { User as UserRaw } from '@prisma/client';
+import { Prisma, User as UserRaw } from '@prisma/client';
 
 export class UserMapper {
   static toDomain(userRaw: UserRaw): User {
@@ -16,7 +16,7 @@ export class UserMapper {
     });
   }
 
-  static toPrisma(user: User): UserRaw {
+  static toPrisma(user: User): Prisma.UserUncheckedCreateInput {
     return {
       id: user.id,
       email: user.email,

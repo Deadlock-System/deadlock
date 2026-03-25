@@ -5,6 +5,7 @@ import { SignInDto } from '../dto/sign-in.dto';
 import { compare } from 'bcrypt';
 import { TokenService } from '../services/token-service';
 import { InvalidCredentialException } from '../exceptions/auth.exceptions';
+import { InvalidPasswordException } from 'src/modules/user/exceptions/user.exceptions';
 
 @Injectable()
 export class SignInUseCase {
@@ -17,6 +18,8 @@ export class SignInUseCase {
   async execute(signInDto: SignInDto) {
     const { email, password } = signInDto;
     const user = await this.userRepository.findByEmail(email);
+
+    if (!user?.hashedPassword) throw new InvalidPasswordException();
 
     const passwordMatches = user
       ? await compare(password, user.hashedPassword)
