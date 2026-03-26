@@ -11,10 +11,4 @@ export abstract class UserProviderRepository {
     userId: string,
     data: { provider: ProviderType; providerId: string },
   ): Promise<any>;
-
-  abstract create(data: {
-    provider: string;
-    providerId: string;
-    userId: string;
-  }): Promise<any>;
 }

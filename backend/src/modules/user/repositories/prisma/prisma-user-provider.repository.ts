@@ -30,15 +30,4 @@ export class PrismaUserProviderRepository implements UserProviderRepository {
       data: { userId, ...data },
     });
   }
-
-  async create(data: {
-    provider: ProviderType;
-    providerId: string;
-    userId: string;
-  }) {
-    const result = await this.prisma.userProvider.create({
-      data,
-    });
-    return result;
-  }
 }

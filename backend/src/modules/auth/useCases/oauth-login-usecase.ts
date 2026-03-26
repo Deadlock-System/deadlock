@@ -32,11 +32,6 @@ export class OAuthLoginUseCase {
       }
     }
 
-    return this.UserRepository.createWithProvider({
-      providerId: oauthLoginDto.providerId,
-      providerType: oauthLoginDto.providerType,
-      providerAvatar: oauthLoginDto.providerAvatar,
-      providerEmail: oauthLoginDto.providerEmail,
-    });
+    return this.UserRepository.createWithProvider({ ...oauthLoginDto });
   }
 }

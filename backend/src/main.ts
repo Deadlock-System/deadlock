@@ -6,9 +6,10 @@ import { AppException } from './common/exceptions/app.exception';
 import { RequestErrorCode } from './common/exceptions/error-codes/request-error.code';
 import { RequestErrorMessages } from './common/exceptions/error-messages/request-error-messages';
 import { SanitizePipe } from './common/pipes/sanitize.pipe';
-import helmet from 'helmet';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -44,6 +45,8 @@ async function bootstrap() {
     }),
     new SanitizePipe(),
   );
+
+  app.use(cookieParser());
 
   const configSwagger = new DocumentBuilder()
     .setTitle('Deadlock API')
