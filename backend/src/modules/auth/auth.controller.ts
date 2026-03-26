@@ -28,7 +28,7 @@ export class AuthController {
   refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshToken(refreshTokenDto);
   }
-  
+
   @Post('auth/google')
   async googleRegister(
     @Body() googleSignUpDto: { credential?: string },
@@ -60,6 +60,6 @@ export class AuthController {
       sameSite: 'lax',
     });
 
-    // return res.redirect('http://localhost:3000/');
+    return res.redirect('http://localhost:3000/');
   }
 }
