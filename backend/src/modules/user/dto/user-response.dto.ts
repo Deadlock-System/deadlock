@@ -2,7 +2,7 @@ import { Seniority } from '../entities/enums/seniority.enum';
 
 export class UserResponseDto {
   id: string;
-  email: string;
+  email: string | null;
   username: string;
   userPhoto: string | null;
   seniorityId: Seniority;

@@ -1,14 +1,15 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignInUseCase } from './useCases/sign-in.usecase';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { TokenService } from './services/token-service';
 import { AuthRepository } from './repository/auth.repository';
 import { UserRepository } from '../user/repository/user.repository';
+import {
+  InvalidRefreshTokenException,
+  RefreshTokenNotFoundException,
+} from './exceptions/auth.exceptions';
+import { UserNotFoundException } from '../user/exceptions/user.exceptions';
 import { compare, hash } from 'bcrypt';
 import { createHmac, randomUUID, timingSafeEqual } from 'crypto';
 import { User } from '../user/entities/user.entity';
@@ -28,30 +29,35 @@ export class AuthService {
     return await this.signInUseCase.execute(signInDto);
   }
 
+  async generateAuthTokens(userId: string, username: string) {
+    const payload = { sub: userId, username };
+
+    const accessToken = this.tokenService.generateAccessToken(payload);
+    const refreshToken = this.tokenService.generateRefreshToken(payload);
+
+    await this.authRepository.refreshTokenRegister(userId, refreshToken);
+
+    return { accessToken, refreshToken };
+  }
+
   async refreshToken(refreshTokenDto: RefreshTokenDto) {
     const { userId, refreshToken } = refreshTokenDto;
 
     const refreshData = await this.authRepository.findByUserId(userId);
-    if (!refreshData)
-      throw new UnauthorizedException('Refresh Token não encontrado');
+    if (!refreshData) throw new RefreshTokenNotFoundException();
 
     const isValid = await this.validateRefreshToken(
       refreshToken,
       refreshData.token,
     );
-    if (!isValid)
-      throw new UnauthorizedException('Refresh token inválido ou expirado');
+    if (!isValid) throw new InvalidRefreshTokenException();
 
     const userData = await this.userRepository.findByUserId(userId);
-    if (!userData) throw new UnauthorizedException('Usuário não encontrado');
+    if (!userData) throw new UserNotFoundException();
 
-    const payload = { sub: userId, username: userData.username };
-    const accessToken = this.tokenService.generateAccessToken(payload);
-    const newRefreshToken = this.tokenService.generateRefreshToken(payload);
+    const authTokens = await this.generateAuthTokens(userId, userData.username);
 
-    await this.authRepository.refreshTokenRegister(userId, newRefreshToken);
-
-    return { accessToken, newRefreshToken };
+    return authTokens;
   }
 
   async registerWithGoogle(googleSignUpDto: { credential?: string }) {
@@ -92,79 +98,8 @@ export class AuthService {
     return { accessToken, refreshToken, isNewUser };
   }
 
-  async registerWithGithub(githubProfile: {
-    email: string;
-    username: string;
-    userPhoto?: string;
-  }) {
-    const email = githubProfile.email;
-    const usernameFromProvider = githubProfile.username;
-    const userPhoto = githubProfile.userPhoto;
-
-    let user = await this.userRepository.findByEmail(email);
-    const isNewUser = !user;
-
-    if (!user) {
-      const usernameBase = this.normalizeUsername(usernameFromProvider);
-      const username = await this.createUniqueUsername(usernameBase);
-
-      const userToCreate = new User({
-        email,
-        username,
-        userPhoto,
-        hashedPassword: await hash(randomUUID(), 10),
-        seniorityId: Seniority.NOT_SELECTED,
-      });
-
-      user = await this.userRepository.create(userToCreate);
-    }
-
-    const payload = { sub: user.id, username: user.username };
-    const accessToken = this.tokenService.generateAccessToken(payload);
-    const refreshToken = this.tokenService.generateRefreshToken(payload);
-
-    await this.authRepository.refreshTokenRegister(user.id, refreshToken);
-
-    return { accessToken, refreshToken, isNewUser };
-  }
-
   getFrontendUrl(): string {
     return process.env.FRONTEND_URL || 'http://localhost:5173';
-  }
-
-  getGithubAuthorizeUrl(): string {
-    const clientId = process.env.GITHUB_CLIENT_ID;
-    if (!clientId) {
-      throw new BadRequestException('GITHUB_CLIENT_ID não configurado');
-    }
-
-    const redirectUri = this.getGithubRedirectUri();
-    const state = this.createSignedState();
-
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      scope: 'read:user user:email',
-      state,
-    }).toString();
-
-    return `https://github.com/login/oauth/authorize?${params}`;
-  }
-
-  async registerWithGithubCode(input: { code: string; state?: string }) {
-    const { code, state } = input;
-    if (!this.validateSignedState(state)) {
-      throw new UnauthorizedException('State inválido');
-    }
-
-    const redirectUri = this.getGithubRedirectUri();
-    const accessToken = await this.exchangeGithubCodeForAccessToken({
-      code,
-      redirectUri,
-    });
-
-    const profile = await this.fetchGithubProfile(accessToken);
-    return this.registerWithGithub(profile);
   }
 
   private async validateRefreshToken(
@@ -216,11 +151,6 @@ export class AuthService {
     return { aud, email, email_verified: emailVerified, name, picture, sub };
   }
 
-  private getGithubRedirectUri(): string {
-    const appUrl = process.env.APP_URL || 'http://localhost:3000';
-    return `${appUrl}/auth/github/callback`;
-  }
-
   private getStateSecret(): string {
     return (
       process.env.JWT_SECRET ||
@@ -252,94 +182,6 @@ export class AuthService {
     const b = Buffer.from(expected);
     if (a.length !== b.length) return false;
     return timingSafeEqual(a, b);
-  }
-
-  private async exchangeGithubCodeForAccessToken(input: {
-    code: string;
-    redirectUri: string;
-  }): Promise<string> {
-    const clientId = process.env.GITHUB_CLIENT_ID;
-    const clientSecret = process.env.GITHUB_CLIENT_SECRET;
-
-    if (!clientId || !clientSecret) {
-      throw new BadRequestException(
-        'GITHUB_CLIENT_ID/GITHUB_CLIENT_SECRET não configurado',
-      );
-    }
-
-    const body = new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      code: input.code,
-      redirect_uri: input.redirectUri,
-    }).toString();
-
-    const data = await this.requestJson({
-      hostname: 'github.com',
-      path: '/login/oauth/access_token',
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': Buffer.byteLength(body).toString(),
-        'User-Agent': 'deadlock-app',
-      },
-      body,
-    });
-
-    const accessToken =
-      typeof data.access_token === 'string' ? data.access_token : undefined;
-    if (!accessToken) {
-      throw new UnauthorizedException('Token do GitHub inválido');
-    }
-
-    return accessToken;
-  }
-
-  private async fetchGithubProfile(accessToken: string): Promise<{
-    email: string;
-    username: string;
-    userPhoto?: string;
-  }> {
-    const headers = {
-      Accept: 'application/vnd.github+json',
-      Authorization: `Bearer ${accessToken}`,
-      'User-Agent': 'deadlock-app',
-    };
-
-    const user = await this.requestJson({
-      hostname: 'api.github.com',
-      path: '/user',
-      method: 'GET',
-      headers,
-    });
-
-    const username = typeof user.login === 'string' ? user.login : undefined;
-    const userPhoto =
-      typeof user.avatar_url === 'string' ? user.avatar_url : undefined;
-
-    const emailsRaw = await this.requestJson({
-      hostname: 'api.github.com',
-      path: '/user/emails',
-      method: 'GET',
-      headers,
-    });
-
-    const emails = Array.isArray(emailsRaw) ? emailsRaw : [];
-
-    const pickEmail = (predicate: (e: any) => boolean) =>
-      emails.find(predicate)?.email;
-
-    const email =
-      pickEmail((e) => e?.primary === true && e?.verified === true) ||
-      pickEmail((e) => e?.verified === true) ||
-      pickEmail((e) => typeof e?.email === 'string');
-
-    if (!email || typeof email !== 'string' || !username) {
-      throw new UnauthorizedException('E-mail do GitHub não encontrado');
-    }
-
-    return { email, username, userPhoto };
   }
 
   private async getJsonFromUrl(

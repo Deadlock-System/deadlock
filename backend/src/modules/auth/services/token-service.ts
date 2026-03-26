@@ -18,10 +18,6 @@ export class TokenService {
   generateAccessToken(payload: JwtPayload): string {
     const expiresIn: StringValue =
       (process.env.JWT_ACCESS_TTL as StringValue) || '15m';
-    const secret =
-      process.env.JWT_ACCESS_SECRET ||
-      process.env.JWT_SECRET ||
-      'fake_jwt_secret';
 
     const tokenPayload: JwtPayloadWithType = {
       ...payload,
@@ -29,7 +25,7 @@ export class TokenService {
     };
 
     return this.jwtService.sign(tokenPayload, {
-      secret,
+      secret: process.env.JWT_ACCESS_SECRET,
       expiresIn,
     });
   }
@@ -37,10 +33,6 @@ export class TokenService {
   generateRefreshToken(payload: JwtPayload): string {
     const expiresIn: StringValue =
       (process.env.JWT_REFRESH_TTL as StringValue) || '7d';
-    const secret =
-      process.env.JWT_REFRESH_SECRET ||
-      process.env.JWT_SECRET ||
-      'fake_jwt_secret';
 
     const tokenPayload: JwtPayloadWithType = {
       ...payload,
@@ -48,7 +40,7 @@ export class TokenService {
     };
 
     return this.jwtService.sign(tokenPayload, {
-      secret,
+      secret: process.env.JWT_REFRESH_SECRET,
       expiresIn,
     });
   }

@@ -1,73 +1,65 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
   Post,
-  Query,
+  Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignInResponseDto } from './dto/sign-in-response.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { GithubAuthGuard } from './guards/github-auth.guard';
+import { User } from '../user/entities/user.entity';
 import type { Response } from 'express';
 
-@Controller('auth')
+@Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('refreshToken')
+  @Post('signIn')
+  async signIn(@Body() signInDto: SignInDto): Promise<SignInResponseDto> {
+    return this.authService.authenticate(signInDto);
+  }
+
+  @Post('auth/refreshToken')
   refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshToken(refreshTokenDto);
   }
-
-  @Post('google')
+  
+  @Post('auth/google')
   async googleRegister(
     @Body() googleSignUpDto: { credential?: string },
   ): Promise<SignInResponseDto> {
     return this.authService.registerWithGoogle(googleSignUpDto);
   }
 
-  @Get('github')
-  githubAuth(@Res() res: Response) {
-    const authorizeUrl = this.authService.getGithubAuthorizeUrl();
-    res.redirect(authorizeUrl);
-  }
+  @Get('auth/github')
+  @UseGuards(GithubAuthGuard)
+  async githubLogin() {}
 
-  @Get('github/callback')
-  async githubCallback(
-    @Query('code') code: string | undefined,
-    @Query('state') state: string | undefined,
-    @Res() res: Response,
-  ) {
-    if (!code) {
-      throw new BadRequestException('Código do GitHub não encontrado');
-    }
+  @Get('auth/github/callback')
+  @UseGuards(GithubAuthGuard)
+  async githubCallback(@Req() req, @Res() res: Response) {
+    const user = req.user as User;
 
-    const result = await this.authService.registerWithGithubCode({
-      code,
-      state,
+    const authTokens = await this.authService.generateAuthTokens(
+      user.id,
+      user.username,
+    );
+
+    res.cookie('access_token', authTokens.accessToken, {
+      httpOnly: true,
+      sameSite: 'lax',
     });
 
-    const frontendUrl = this.authService.getFrontendUrl();
-    const hash = new URLSearchParams({
-      provider: 'github',
-      accessToken: result.accessToken,
-      refreshToken: result.refreshToken,
-      isNewUser: String(Boolean(result.isNewUser)),
-    }).toString();
+    res.cookie('refresh_token', authTokens.refreshToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+    });
 
-    res.redirect(`${frontendUrl}/register#${hash}`);
-  }
-}
-
-@Controller()
-export class LegacyAuthController {
-  constructor(private readonly authService: AuthService) {}
-
-  @Post('signIn')
-  async signIn(@Body() signInDto: SignInDto): Promise<SignInResponseDto> {
-    return this.authService.authenticate(signInDto);
+    // return res.redirect('http://localhost:3000/');
   }
 }

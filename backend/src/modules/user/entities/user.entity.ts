@@ -2,10 +2,10 @@ import { Seniority } from './enums/seniority.enum';
 
 export class User {
   id: string;
-  email: string;
+  email: string | null;
   username: string;
   userPhoto: string | null;
-  hashedPassword: string;
+  hashedPassword: string | null;
   createdAt: Date;
   seniorityId: Seniority;
 
