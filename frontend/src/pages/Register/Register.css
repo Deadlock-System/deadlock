@@ -69,6 +69,98 @@ body {
   color: #263f4c;
 }
 
+.registerMessage {
+  width: min(520px, 100%);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-weight: 800;
+  text-align: center;
+  white-space: pre-line;
+}
+
+.registerMessageSuccess {
+  background: rgba(21, 128, 61, 0.1);
+  color: #166534;
+  border: 1px solid rgba(21, 128, 61, 0.25);
+}
+
+.registerMessageError {
+  background: rgba(185, 28, 28, 0.08);
+  color: #7f1d1d;
+  border: 1px solid rgba(185, 28, 28, 0.25);
+}
+
+.registerField {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.registerPasswordHint {
+  width: min(360px, 100%);
+  background: #ffffff;
+  border: 1px solid rgba(38, 63, 76, 0.25);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  padding: 12px 14px;
+  color: #263f4c;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(100% + 12px);
+  z-index: 2;
+}
+
+.registerPasswordHint::after {
+  content: "";
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border-right: 1px solid rgba(38, 63, 76, 0.25);
+  border-bottom: 1px solid rgba(38, 63, 76, 0.25);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  bottom: -7px;
+}
+
+.registerPasswordHintTitle {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.registerPasswordHintList {
+  margin: 8px 0 0 18px;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.registerPasswordHintList li {
+  margin: 4px 0;
+}
+
+.registerHint {
+  width: min(300px, 100%);
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(38, 63, 76, 0.8);
+  text-align: center;
+}
+
+.registerFieldError {
+  width: min(300px, 100%);
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: #b91c1c;
+  text-align: center;
+}
+
 .registerOauthRow {
   width: 100%;
   display: flex;
@@ -124,13 +216,26 @@ body {
   justify-content: center;
 }
 
+.registerLoginLink {
+  margin-top: 26px;
+  color: #263f4c;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.registerLoginLink:hover {
+  text-decoration: underline;
+}
+
 .registerGrid {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(2, minmax(220px, 1fr));
   gap: 18px 36px;
   justify-items: center;
-  align-items: center;
+  align-items: start;
 }
 
 .registerGridFull {
@@ -170,6 +275,11 @@ body {
 .registerSubmit:focus-visible {
   outline: 3px solid rgba(38, 63, 76, 0.35);
   outline-offset: 3px;
+}
+
+.registerSubmit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 860px) {

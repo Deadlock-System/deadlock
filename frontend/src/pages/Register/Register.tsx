@@ -7,8 +7,8 @@ import Select from "../../components/Select/Select";
 
 import logo from "../../assets/logo-deadlock-sem-fundo.png";
 import "./Register.css";
-import { getErrorMessage } from "../../utils/errorMessage";
-import { env } from "../../config/env";
+import { getErrorMessage } from "../../utils/ErrorMessage";
+import { env } from "../../config/Env";
 
 type FormState = {
   username: string;
@@ -20,6 +20,8 @@ type FormState = {
 
 export default function Register() {
   const googleEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPasswordHint, setShowPasswordHint] = useState(false);
   const [form, setForm] = useState<FormState>({
     username: "",
     email: "",
@@ -27,37 +29,142 @@ export default function Register() {
     confirmPassword: "",
     seniorityId: "",
   });
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof FormState, string>>
+  >({});
+  const [formMessage, setFormMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
+    setFormMessage(null);
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next[e.target.name as keyof FormState];
+      return next;
+    });
     setForm({
       ...form,
       [e.target.name]: e.target.value,
     });
   };
 
+  const getErrorText = (error: unknown, fallback: string) => {
+    if (typeof error === "object" && error !== null && "message" in error) {
+      const message = (error as { message: unknown }).message;
+      if (Array.isArray(message)) {
+        return message.map(String).join("\n");
+      }
+    }
+    return getErrorMessage(error, fallback);
+  };
+
+  const isStrongPassword = (password: string) =>
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(password);
+
+  const validateForm = (): Partial<Record<keyof FormState, string>> => {
+    const errors: Partial<Record<keyof FormState, string>> = {};
+
+    const username = form.username.trim();
+    const email = form.email.trim();
+    const password = form.password;
+    const confirmPassword = form.confirmPassword;
+    const seniorityId = form.seniorityId;
+
+    if (!username) errors.username = "O nome de usuário não pode estar vazio";
+
+    if (!email) {
+      errors.email = "Informe seu e-mail";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = "E-mail inválido";
+    }
+
+    if (!password) {
+      errors.password = "A senha não pode estar vazia";
+    } else if (!isStrongPassword(password)) {
+      errors.password =
+        "A senha deve conter pelo menos 8 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial";
+    }
+
+    if (!confirmPassword) {
+      errors.confirmPassword = "A confirmação de senha não pode estar vazia";
+    } else if (!isStrongPassword(confirmPassword)) {
+      errors.confirmPassword =
+        "A senha deve conter pelo menos 8 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial";
+    }
+
+    if (password && confirmPassword && password !== confirmPassword) {
+      errors.confirmPassword = "As senhas não coincidem";
+    }
+
+    if (seniorityId === "") {
+      errors.seniorityId = "Selecione sua senioridade";
+    }
+
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const errors = validateForm();
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setFormMessage({ type: "error", text: "Corrija os campos destacados" });
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       await createUser({
-        email: form.email,
-        username: form.username,
+        email: form.email.trim(),
+        username: form.username.trim(),
         password: form.password,
         confirmPassword: form.confirmPassword,
         seniorityId: form.seniorityId as Seniority,
       });
 
-      alert("Usuário cadastrado com sucesso!");
+      setFormMessage({ type: "success", text: "Usuário cadastrado com sucesso!" });
+      setForm({
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        seniorityId: "",
+      });
+      setFieldErrors({});
     } catch (error: unknown) {
-        alert(getErrorMessage(error, "Erro ao cadastrar usuário"));
+      const text = getErrorText(error, "Erro ao cadastrar usuário");
+      setFormMessage({ type: "error", text });
+      const normalized = text.toLowerCase();
+      if (normalized.includes("e-mail inválido") || normalized.includes("e-mail invalido")) {
+        setFieldErrors((prev) => ({ ...prev, email: "E-mail inválido" }));
+      }
+      if (normalized.includes("senha deve conter") || normalized.includes("senha deve conter pelo menos")) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          password:
+            "A senha deve conter pelo menos 8 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial",
+        }));
+      }
+      if (normalized.includes("confirma") && normalized.includes("senha")) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          confirmPassword: "As senhas não coincidem",
+        }));
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleRegister = async (
     credentialResponse: CredentialResponse
   ) => {
+    setIsSubmitting(true);
     try {
       const credential = credentialResponse.credential;
       if (!credential) {
@@ -66,12 +173,17 @@ export default function Register() {
 
       const result = await registerWithGoogle(credential);
       if (result.isNewUser === false) {
-        alert("Essa conta já foi cadastrada!");
+        setFormMessage({ type: "error", text: "Essa conta já foi cadastrada!" });
         return;
       }
-      alert("Usuário cadastrado com sucesso!");
+      setFormMessage({ type: "success", text: "Usuário cadastrado com sucesso!" });
     } catch (error: unknown) {
-        alert(getErrorMessage(error, "Erro ao cadastrar com Google"));
+      setFormMessage({
+        type: "error",
+        text: getErrorText(error, "Erro ao cadastrar com Google"),
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -87,9 +199,9 @@ export default function Register() {
 
     if (provider === "github" && accessToken && refreshToken) {
       if (isNewUser === "false") {
-        alert("Essa conta já foi cadastrada!");
+        setFormMessage({ type: "error", text: "Essa conta já foi cadastrada!" });
       } else {
-        alert("Usuário cadastrado com sucesso!");
+        setFormMessage({ type: "success", text: "Usuário cadastrado com sucesso!" });
       }
       window.history.replaceState(
         null,
@@ -109,61 +221,119 @@ export default function Register() {
           <form className="registerForm" onSubmit={handleSubmit}>
             <h2 className="registerTitle">Crie sua conta</h2>
 
+            {formMessage ? (
+              <div
+                className={
+                  formMessage.type === "success"
+                    ? "registerMessage registerMessageSuccess"
+                    : "registerMessage registerMessageError"
+                }
+                role={formMessage.type === "error" ? "alert" : "status"}
+              >
+                {formMessage.text}
+              </div>
+            ) : null}
+
             <div className="registerGrid">
-              <Input
-                label="Usuário"
-                name="username"
-                value={form.username}
-                onChange={handleChange}
-                placeholder="USUARIO"
-              />
+              <div className="registerField">
+                <Input
+                  label="Usuário"
+                  name="username"
+                  value={form.username}
+                  onChange={handleChange}
+                  placeholder="USUARIO"
+                />
+                {fieldErrors.username ? (
+                  <p className="registerFieldError">{fieldErrors.username}</p>
+                ) : null}
+              </div>
 
-              <Input
-                label="Email"
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="EMAIL"
-              />
+              <div className="registerField">
+                <Input
+                  label="Email"
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="EMAIL"
+                />
+                {fieldErrors.email ? (
+                  <p className="registerFieldError">{fieldErrors.email}</p>
+                ) : null}
+              </div>
 
-              <Input
-                label="Senha"
-                name="password"
-                type="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="SENHA"
-              />
+              <div
+                className="registerField"
+                onFocus={() => setShowPasswordHint(true)}
+                onBlur={() => setShowPasswordHint(false)}
+              >
+                <Input
+                  label="Senha"
+                  name="password"
+                  type="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="SENHA"
+                />
+                {showPasswordHint ? (
+                  <div className="registerPasswordHint" role="note">
+                    <div className="registerPasswordHintTitle">
+                      A senha deve conter:
+                    </div>
+                    <ul className="registerPasswordHintList">
+                      <li>Mínimo de 8 caracteres</li>
+                      <li>Pelo menos 1 letra maiúscula</li>
+                      <li>Pelo menos 1 letra minúscula</li>
+                      <li>Pelo menos 1 número</li>
+                      <li>Pelo menos 1 caractere especial</li>
+                    </ul>
+                  </div>
+                ) : null}
+                {fieldErrors.password ? (
+                  <p className="registerFieldError">{fieldErrors.password}</p>
+                ) : null}
+              </div>
 
-              <Input
-                label="Confirmar Senha"
-                name="confirmPassword"
-                type="password"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                placeholder="CONFIRMAR SENHA"
-              />
+              <div className="registerField">
+                <Input
+                  label="Confirmar Senha"
+                  name="confirmPassword"
+                  type="password"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="CONFIRMAR SENHA"
+                />
+                {fieldErrors.confirmPassword ? (
+                  <p className="registerFieldError">
+                    {fieldErrors.confirmPassword}
+                  </p>
+                ) : null}
+              </div>
 
               <div className="registerGridFull">
-                <Select
-                  label="Senioridade"
-                  name="seniorityId"
-                  value={form.seniorityId}
-                  onChange={handleChange}
-                  options={[
-                    { label: "Estudante", value: "STUDENDT" },
-                    { label: "Junior", value: "JUNIOR" },
-                    { label: "Pleno", value: "PLENO" },
-                    { label: "Senior", value: "SENIOR" },
-                    { label: "Tech lead", value: "TECH_LEAD" },
-                    { label: "C Level", value: "C_LEVEL" },
-                  ]}
-                />
+                <div className="registerField">
+                  <Select
+                    label="Senioridade"
+                    name="seniorityId"
+                    value={form.seniorityId}
+                    onChange={handleChange}
+                    options={[
+                      { label: "Estudante", value: "STUDENDT" },
+                      { label: "Junior", value: "JUNIOR" },
+                      { label: "Pleno", value: "PLENO" },
+                      { label: "Senior", value: "SENIOR" },
+                      { label: "Tech lead", value: "TECH_LEAD" },
+                      { label: "C Level", value: "C_LEVEL" },
+                    ]}
+                  />
+                  {fieldErrors.seniorityId ? (
+                    <p className="registerFieldError">{fieldErrors.seniorityId}</p>
+                  ) : null}
+                </div>
               </div>
             </div>
 
-            <button className="registerSubmit" type="submit">
+            <button className="registerSubmit" type="submit" disabled={isSubmitting}>
               Cadastrar
             </button>
 
@@ -173,9 +343,7 @@ export default function Register() {
                   onSuccess={(credentialResponse) => {
                     void handleGoogleRegister(credentialResponse);
                   }}
-                  onError={() => {
-                    alert("Login com Google falhou");
-                  }}
+                  onError={() => setFormMessage({ type: "error", text: "Login com Google falhou" })}
                   text="signup_with"
                   shape="pill"
                 />
@@ -184,8 +352,12 @@ export default function Register() {
                   type="button"
                   className="registerOauthFallback"
                   onClick={() => {
-                    alert("Configure VITE_GOOGLE_CLIENT_ID para habilitar o Google");
+                    setFormMessage({
+                      type: "error",
+                      text: "Configure VITE_GOOGLE_CLIENT_ID para habilitar o Google",
+                    });
                   }}
+                  disabled={isSubmitting}
                 >
                   Sign up with Google
                 </button>
@@ -206,6 +378,10 @@ export default function Register() {
                 <span>Sign up with GitHub</span>
               </a>
             </div>
+
+            <a className="registerLoginLink" href="/login">
+              Já tem conta? Clique aqui!
+            </a>
           </form>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import type { RegisterType } from "../types/RegisterType";
-import { env } from '../config/env'
+import { env } from '../config/Env'
 
 export async function createUser(data: RegisterType) {
   const response = await fetch(`${env.apiURL}/users`, {
