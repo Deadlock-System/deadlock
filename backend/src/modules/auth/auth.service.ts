@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignInUseCase } from './useCases/sign-in.usecase';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { TokenService } from './services/token-service';
-import { AuthRepository } from './repository/auth.repository';
-import { UserRepository } from '../user/repository/user.repository';
 import {
   InvalidRefreshTokenException,
   RefreshTokenNotFoundException,
@@ -15,6 +17,8 @@ import { createHmac, randomUUID, timingSafeEqual } from 'crypto';
 import { User } from '../user/entities/user.entity';
 import { Seniority } from '../user/entities/enums/seniority.enum';
 import * as https from 'https';
+import { AuthRepository } from './repositories/auth.repository';
+import { UserRepository } from '../user/repositories/user.repository';
 
 @Injectable()
 export class AuthService {

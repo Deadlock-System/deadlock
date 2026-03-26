@@ -3,6 +3,12 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { InvalidAccessTokenException } from '../exceptions/auth.exceptions';
 
+type JwtPayload = {
+  sub: string;
+  username: string;
+  type: 'access' | 'refresh';
+};
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
