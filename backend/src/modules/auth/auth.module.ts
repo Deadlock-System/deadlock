@@ -13,6 +13,7 @@ import { AuthRepository } from './repositories/auth.repository';
 import { PrismaAuthRepository } from './repositories/prisma-auth.repository';
 import { OAuthLoginUseCase } from './useCases/oauth-login-usecase';
 import { PassportModule } from '@nestjs/passport';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PassportModule } from '@nestjs/passport';
     AuthService,
     SignInUseCase,
     GithubStrategy,
+    GoogleStrategy,
     OAuthLoginUseCase,
     JwtStrategy,
     TokenService,
