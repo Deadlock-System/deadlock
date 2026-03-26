@@ -28,6 +28,13 @@ export class AuthController {
   refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshToken(refreshTokenDto);
   }
+  
+  @Post('auth/google')
+  async googleRegister(
+    @Body() googleSignUpDto: { credential?: string },
+  ): Promise<SignInResponseDto> {
+    return this.authService.registerWithGoogle(googleSignUpDto);
+  }
 
   @Get('auth/github')
   @UseGuards(GithubAuthGuard)

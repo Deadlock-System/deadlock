@@ -1,5 +1,7 @@
+
 import { forwardRef, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
+import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GithubStrategy } from './strategies/github.strategy';
 import { JwtModule } from '@nestjs/jwt';
@@ -12,12 +14,14 @@ import { PrismaModule } from 'src/modules/prisma/prisma.module';
 import { AuthRepository } from './repositories/auth.repository';
 import { PrismaAuthRepository } from './repositories/prisma-auth.repository';
 import { OAuthLoginUseCase } from './useCases/oauth-login-usecase';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    PassportModule.register({ session: false }),
     JwtModule.register({}),
     forwardRef(() => UserModule),
     PrismaModule,
