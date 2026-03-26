@@ -14,12 +14,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_ACCESS_SECRET,
+      secretOrKey: process.env.JWT_ACCESS_SECRET as string,
       ignoreExpiration: false,
     });
   }
 
-  async validate(payload: JwtPayload) {
+  validate(payload: JwtPayload) {
     if (payload.type && payload.type !== 'access') {
       throw new InvalidAccessTokenException();
     }
