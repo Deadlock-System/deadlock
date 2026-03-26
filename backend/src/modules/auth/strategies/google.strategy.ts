@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-google-oauth20';
+import { Strategy, Profile } from 'passport-google-oauth20';
+import { OAuthLoginUseCase } from '../useCases/oauth-login-usecase';
+import { ProviderType } from '@prisma/client';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-  constructor() {
+  constructor(private readonly oauthLoginUseCase: OAuthLoginUseCase) {
     super({
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -13,14 +15,16 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: any) {
-    console.log(profile);
-    const user = {
-      email: profile.emails[0].value,
-      name: profile.displayName,
-      googleId: profile.id,
-    };
+  async validate(accessToken: string, refreshToken: string, profile: Profile) {
+    const email = profile.emails?.[0]?.value;
+    const avatar = profile.photos?.[0]?.value;
 
-    return user;
+    return this.oauthLoginUseCase.execute({
+      providerId: profile.id,
+      providerEmail: email,
+      providerUsername: profile.username,
+      providerAvatar: avatar,
+      providerType: ProviderType.GOOGLE,
+    });
   }
 }
