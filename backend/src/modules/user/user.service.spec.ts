@@ -16,6 +16,7 @@ import {
 } from './exceptions/user.exceptions';
 import { AuthService } from '../auth/auth.service';
 import { compare, hash } from 'bcrypt';
+import { HttpStatus } from '@nestjs/common';
 
 jest.mock('bcrypt', () => ({
   compare: jest.fn(),
@@ -62,7 +63,7 @@ describe('UserService', () => {
     authService = module.get<AuthService>(AuthService);
   });
 
-  afterEach(() => {
+  beforeEach(() => {
     jest.clearAllMocks();
 
     userEntityMock = new User({
@@ -112,7 +113,7 @@ describe('UserService', () => {
       await expect(service.create(createUserDtoMock)).rejects.toMatchObject({
         code: UserErrorCode.EMAIL_ALREADY_EXISTS,
         message: UserErrorMessages.EMAIL_ALREADY_EXISTS,
-        status: 409,
+        status: HttpStatus.CONFLICT,
       });
 
       expect(findByEmailMethodSpy).toHaveBeenCalledWith(
@@ -134,7 +135,7 @@ describe('UserService', () => {
       await expect(service.create(createUserDtoMock)).rejects.toMatchObject({
         code: UserErrorCode.USERNAME_ALREADY_EXISTS,
         message: UserErrorMessages.USERNAME_ALREADY_EXISTS,
-        status: 409,
+        status: HttpStatus.CONFLICT,
       });
 
       expect(findByUsernameMethodSpy).toHaveBeenCalledWith(
@@ -160,10 +161,43 @@ describe('UserService', () => {
       await expect(service.create(createUserDtoMock)).rejects.toMatchObject({
         code: UserErrorCode.INVALID_PASSWORD,
         message: UserErrorMessages.INVALID_PASSWORD,
-        status: 400,
+        status: HttpStatus.BAD_REQUEST,
       });
 
       expect(repository.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('findByUserId (find user by id)', () => {
+    const userId = 'user-id-mock';
+
+    it('should return user data when user exists', async () => {
+      jest.spyOn(repository, 'findByUserId').mockResolvedValue(userEntityMock);
+
+      const result = await service.findByUserId(userId);
+
+      expect(result).toBeInstanceOf(UserResponseDto);
+      expect(result.email).toEqual(userEntityMock.email);
+      expect(result.username).toEqual(userEntityMock.username);
+      expect(result).not.toHaveProperty('hashedPassword');
+
+      expect(repository.findByUserId).toHaveBeenCalledWith(userId);
+    });
+
+    it('should throw not found when user does not exist', async () => {
+      jest.spyOn(repository, 'findByUserId').mockResolvedValue(null);
+
+      await expect(service.findByUserId(userId)).rejects.toThrow(
+        UserNotFoundException,
+      );
+
+      await expect(service.findByUserId(userId)).rejects.toMatchObject({
+        code: UserErrorCode.USER_NOT_FOUND,
+        message: UserErrorMessages.USER_NOT_FOUND,
+        status: HttpStatus.NOT_FOUND,
+      });
+
+      expect(repository.findByUserId).toHaveBeenCalledWith(userId);
     });
   });
 
@@ -222,7 +256,7 @@ describe('UserService', () => {
         {
           code: UserErrorCode.USER_NOT_FOUND,
           message: UserErrorMessages.USER_NOT_FOUND,
-          status: 404,
+          status: HttpStatus.NOT_FOUND,
         },
       );
 
@@ -249,7 +283,7 @@ describe('UserService', () => {
         {
           code: UserErrorCode.USERNAME_ALREADY_EXISTS,
           message: UserErrorMessages.USERNAME_ALREADY_EXISTS,
-          status: 409,
+          status: HttpStatus.CONFLICT,
         },
       );
 
@@ -325,7 +359,7 @@ describe('UserService', () => {
       ).rejects.toMatchObject({
         code: UserErrorCode.USER_NOT_FOUND,
         message: UserErrorMessages.USER_NOT_FOUND,
-        status: 404,
+        status: HttpStatus.NOT_FOUND,
       });
 
       expect(repository.updatePasswordAndRevokeTokens).not.toHaveBeenCalled();
@@ -350,7 +384,7 @@ describe('UserService', () => {
       ).rejects.toMatchObject({
         code: UserErrorCode.INVALID_PASSWORD,
         message: UserErrorMessages.INVALID_PASSWORD,
-        status: 400,
+        status: HttpStatus.BAD_REQUEST,
       });
 
       expect(repository.updatePasswordAndRevokeTokens).not.toHaveBeenCalled();
@@ -374,7 +408,7 @@ describe('UserService', () => {
       ).rejects.toMatchObject({
         code: UserErrorCode.INVALID_PASSWORD,
         message: UserErrorMessages.INVALID_PASSWORD,
-        status: 400,
+        status: HttpStatus.BAD_REQUEST,
       });
 
       expect(repository.updatePasswordAndRevokeTokens).not.toHaveBeenCalled();

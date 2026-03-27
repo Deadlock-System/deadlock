@@ -29,9 +29,10 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @Get('me')
+  @UseGuards(AuthGuard('jwt'))
+  findByUserId(@GetUserId() userId: string) {
+    return this.userService.findByUserId(userId);
   }
 
   @UseGuards(AuthGuard('jwt'))

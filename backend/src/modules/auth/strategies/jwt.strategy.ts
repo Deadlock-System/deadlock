@@ -12,11 +12,6 @@ type JwtPayload = {
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
-    const jwtSecret =
-      process.env.JWT_ACCESS_SECRET ||
-      process.env.JWT_SECRET ||
-      'fake_jwt_secret';
-
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -24,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload) {
+  validate(payload: JwtPayload) {
     if (payload.type && payload.type !== 'access') {
       throw new InvalidAccessTokenException();
     }

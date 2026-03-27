@@ -59,8 +59,14 @@ export class UserService {
     return `This action returns all user`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findByUserId(userId: string) {
+    const userData = await this.repository.findByUserId(userId);
+
+    if (!userData) {
+      throw new UserNotFoundException();
+    }
+
+    return UserMapper.toResponse(userData);
   }
 
   async update(updateUserDto: UpdateUserDto, userId: string) {
