@@ -9,7 +9,7 @@ import {
   UsernameAlreadyExistsException,
   UserNotFoundException,
 } from './exceptions/user.exceptions';
-import { UserRepository } from './repository/user.repository';
+import { UserRepository } from './repositories/user.repository';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { AuthService } from '../auth/auth.service';
 import { UserMapper } from './mappers/user.mapper';
@@ -105,6 +105,8 @@ export class UserService {
     if (!userData) {
       throw new UserNotFoundException();
     }
+
+    if (!userData?.hashedPassword) throw new InvalidPasswordException();
 
     const isCurrentPasswordValid = await compare(
       updatePasswordDto.currentPassword,

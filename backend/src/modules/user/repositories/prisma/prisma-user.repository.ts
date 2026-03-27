@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '../entities/user.entity';
-import { UserRepository } from './user.repository';
-import { UserMapper } from '../mappers/user.mapper';
+import { UserRepository } from '../user.repository';
+import { User } from '../../entities/user.entity';
+import { UserMapper } from '../../mappers/user.mapper';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { OAuthLoginDto } from 'src/modules/auth/dto/oauth-login.dto';
 
 @Injectable()
 export class PrismaRepository implements UserRepository {
@@ -80,6 +81,30 @@ export class PrismaRepository implements UserRepository {
           deleteMany: {},
         },
       },
+    });
+  }
+
+  async createWithProvider(oauthData: OAuthLoginDto): Promise<User> {
+    return this.prisma.$transaction(async (txPrisma) => {
+      const user = await txPrisma.user.create({
+        data: {
+          email: oauthData.providerEmail,
+          user_name:
+            oauthData.providerUsername ||
+            'User' + Math.floor(Math.random() * (1 - 500)) + 500, //!Best Ultra Fucking High Big Brain Username Feature,
+          user_photo: oauthData.providerAvatar,
+        },
+      });
+
+      await txPrisma.userProvider.create({
+        data: {
+          userId: user.id,
+          provider: oauthData.providerType,
+          providerId: oauthData.providerId,
+        },
+      });
+
+      return UserMapper.toDomain(user);
     });
   }
 }

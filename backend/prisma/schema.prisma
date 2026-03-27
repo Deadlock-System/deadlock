@@ -17,14 +17,21 @@ enum Seniority {
   C_LEVEL
 }
 
+enum ProviderType {
+  GITHUB
+  GOOGLE
+}
+
 model User {
   id              String   @id @default(uuid())
-  email           String   @unique
+  email           String?  @unique
   user_name       String   @unique
   user_photo      String?
-  hashed_password String
+  hashed_password String?
   createdAt       DateTime @default(now()) @db.Timestamp(3)
   seniority_id    Seniority @default(NOT_SELECTED)
+
+  providers       UserProvider[]
 
   posts         Post[]
   likesPosts    Likes_Posts[]
@@ -33,6 +40,19 @@ model User {
 
   refreshTokens RefreshToken[]
 }
+
+model UserProvider {
+  id         String   @id @default(uuid())
+  provider   ProviderType
+  providerId String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  createdAt  DateTime @default(now()) @db.Timestamp(3)
+
+  @@unique([provider, providerId])
+  @@unique([userId, provider])
+}
+
 
 model RefreshToken {
   id              String   @id @default(uuid())

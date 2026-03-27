@@ -3,8 +3,8 @@ import { SignInDto } from './dto/sign-in.dto';
 import { SignInUseCase } from './useCases/sign-in.usecase';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { TokenService } from './services/token-service';
-import { AuthRepository } from './repository/auth.repository';
-import { UserRepository } from '../user/repository/user.repository';
+import { AuthRepository } from './repositories/auth.repository';
+import { UserRepository } from '../user/repositories/user.repository';
 import { compare } from 'bcrypt';
 import {
   InvalidRefreshTokenException,
