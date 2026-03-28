@@ -10,7 +10,7 @@ type JwtPayload = {
 };
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
@@ -21,6 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       ]),
       secretOrKey: process.env.JWT_ACCESS_SECRET as string,
       ignoreExpiration: false,
+      secretOrKey: jwtSecret,
     });
   }
 
