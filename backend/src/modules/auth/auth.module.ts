@@ -14,6 +14,7 @@ import { PrismaAuthRepository } from './repositories/prisma-auth.repository';
 import { OAuthLoginUseCase } from './useCases/oauth-login-usecase';
 import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { CookieService } from './services/cookie-service';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
     OAuthLoginUseCase,
     JwtStrategy,
     TokenService,
+    CookieService,
     { provide: AuthRepository, useClass: PrismaAuthRepository },
   ],
   exports: [AuthService],

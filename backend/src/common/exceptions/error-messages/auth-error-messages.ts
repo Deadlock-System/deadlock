@@ -3,4 +3,5 @@ export const AuthErrorMessages = {
   INVALID_REFRESH_TOKEN: 'Refresh token é inválido ou já expirou.',
   INVALID_ACCESS_TOKEN: 'Access token fornecido é inválido.',
   INVALID_CREDENTIALS: 'Credenciais informadas são inválidas.',
+  INVALID_TOKEN_TYPE: 'Tipo do token está inválido.',
 };

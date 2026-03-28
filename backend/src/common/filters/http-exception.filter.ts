@@ -3,6 +3,7 @@ import {
   Catch,
   ExceptionFilter,
   HttpException,
+  Logger,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 
@@ -19,6 +20,8 @@ interface UnknownException {
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(HttpExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
@@ -27,6 +30,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const isHttp = exception instanceof HttpException;
     const status = isHttp ? exception.getStatus() : 500;
+
+    if (isHttp) {
+      this.logger.warn(exception.message);
+    } else {
+      this.logger.error(
+        (exception as Error)?.message,
+        (exception as Error)?.stack,
+      );
+    }
 
     const exceptionResponse = isHttp ? exception.getResponse() : null;
 

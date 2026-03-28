@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { StringValue } from 'ms';
+import { InvalidTokenTypeException } from '../exceptions/auth.exceptions';
 
 interface JwtPayload {
   sub: string;
@@ -43,5 +44,14 @@ export class TokenService {
       secret: process.env.JWT_REFRESH_SECRET,
       expiresIn,
     });
+  }
+
+  verifyRefreshToken(token: string) {
+    const payload = this.jwtService.verify(token, {
+      secret: process.env.JWT_REFRESH_SECRET,
+    });
+
+    if (payload.type !== 'refresh') throw new InvalidTokenTypeException();
+    return payload;
   }
 }
