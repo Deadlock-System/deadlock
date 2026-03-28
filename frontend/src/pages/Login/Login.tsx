@@ -100,12 +100,12 @@ function LoginContent() {
 
             <div className="loginGrid">
               <Input
-                label="Usuário ou e-mail"
+                label="E-mail"
                 name="email"
-                type="text"
+                type="email"
                 value={form.email}
                 onChange={handleChange}
-                placeholder="USUARIO/EMAIL"
+                placeholder="EMAIL"
               />
 
               <Input
