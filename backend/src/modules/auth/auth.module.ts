@@ -12,12 +12,16 @@ import { PrismaModule } from 'src/modules/prisma/prisma.module';
 import { AuthRepository } from './repositories/auth.repository';
 import { PrismaAuthRepository } from './repositories/prisma-auth.repository';
 import { OAuthLoginUseCase } from './useCases/oauth-login-usecase';
+import { PassportModule } from '@nestjs/passport';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { CookieService } from './services/cookie-service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    PassportModule.register({ session: false }),
     JwtModule.register({}),
     forwardRef(() => UserModule),
     PrismaModule,
@@ -27,9 +31,11 @@ import { OAuthLoginUseCase } from './useCases/oauth-login-usecase';
     AuthService,
     SignInUseCase,
     GithubStrategy,
+    GoogleStrategy,
     OAuthLoginUseCase,
     JwtStrategy,
     TokenService,
+    CookieService,
     { provide: AuthRepository, useClass: PrismaAuthRepository },
   ],
   exports: [AuthService],

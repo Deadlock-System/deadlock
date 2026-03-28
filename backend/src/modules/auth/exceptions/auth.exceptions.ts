@@ -42,3 +42,13 @@ export class InvalidCredentialException extends AppException {
     });
   }
 }
+
+export class InvalidTokenTypeException extends AppException {
+  constructor() {
+    super({
+      code: AuthErrorCode.INVALID_TOKEN_TYPE,
+      message: AuthErrorMessages.INVALID_TOKEN_TYPE,
+      status: HttpStatus.BAD_REQUEST,
+    });
+  }
+}

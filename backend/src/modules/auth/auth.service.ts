@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignInUseCase } from './useCases/sign-in.usecase';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { TokenService } from './services/token-service';
+import { UserNotFoundException } from '../user/exceptions/user.exceptions';
 import { AuthRepository } from './repositories/auth.repository';
 import { UserRepository } from '../user/repositories/user.repository';
 import { compare } from 'bcrypt';
@@ -10,7 +10,6 @@ import {
   InvalidRefreshTokenException,
   RefreshTokenNotFoundException,
 } from './exceptions/auth.exceptions';
-import { UserNotFoundException } from '../user/exceptions/user.exceptions';
 
 @Injectable()
 export class AuthService {
@@ -36,8 +35,9 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async refreshToken(refreshTokenDto: RefreshTokenDto) {
-    const { userId, refreshToken } = refreshTokenDto;
+  async refreshToken(refreshToken: string) {
+    const payload = await this.tokenService.verifyRefreshToken(refreshToken);
+    const userId = payload.sub;
 
     const refreshData = await this.authRepository.findByUserId(userId);
     if (!refreshData) throw new RefreshTokenNotFoundException();
@@ -46,6 +46,7 @@ export class AuthService {
       refreshToken,
       refreshData.token,
     );
+
     if (!isValid) throw new InvalidRefreshTokenException();
 
     const userData = await this.userRepository.findByUserId(userId);
