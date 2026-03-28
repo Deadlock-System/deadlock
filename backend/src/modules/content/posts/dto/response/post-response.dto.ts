@@ -1,5 +1,10 @@
-import { Post } from '@prisma/client';
-import { Expose, Transform, TransformFnParams } from 'class-transformer';
+import { Post, User } from '@prisma/client';
+import {
+  Exclude,
+  Expose,
+  Transform,
+  TransformFnParams,
+} from 'class-transformer';
 
 export class PostResponseDto {
   @Expose()
@@ -17,12 +22,15 @@ export class PostResponseDto {
   @Expose()
   readonly isOwner: boolean;
 
-  @Expose()
-  @Transform(({ obj }: TransformFnParams) => {
-    const post = obj as Post;
-    return post.anonymous === true ? undefined : post.user_id;
-  })
+  @Exclude()
   readonly user_id?: string;
+
+  @Expose()
+  @Transform(({ obj, value }: TransformFnParams) => {
+    const post = obj as Post;
+    return post.anonymous === true ? undefined : (value as User);
+  })
+  readonly user?: Omit<User, 'hashedPassword' | 'createdAt' | 'email'>;
 
   @Expose()
   readonly createdAt: Date;
@@ -37,5 +45,9 @@ export class PostResponseDto {
     Object.assign(this, partial);
 
     this.isOwner = currentUserId === this.user_id;
+  }
+
+  static fromArray(posts: Post[], currentUserId?: string) {
+    return posts.map((post) => new PostResponseDto(post, currentUserId));
   }
 }

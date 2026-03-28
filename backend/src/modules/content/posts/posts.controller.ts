@@ -2,7 +2,9 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Get,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -11,6 +13,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { CreatePostDto } from './dto/create-post.dto';
 import { GetUserId } from 'src/modules/auth/decorators/get-user-id.decorator';
 import { PostResponseDto } from './dto/response/post-response.dto';
+import { GetPostsDto } from './dto/get-posts.dto';
+import { OptionalJwtAuthGuard } from 'src/modules/auth/guards/optional-jwt.guard';
 
 @Controller('posts')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -29,5 +33,26 @@ export class PostsController {
     );
 
     return new PostResponseDto(createdPost, userId);
+  }
+
+  @Get()
+  @UseGuards(OptionalJwtAuthGuard)
+  async findAll(@Query() query: GetPostsDto, @GetUserId() userId: string) {
+    const { posts, total } = await this.postsService.findAll(
+      query.page,
+      query.limit,
+    );
+
+    const postsResponse = PostResponseDto.fromArray(posts, userId);
+
+    return {
+      data: postsResponse,
+      meta: {
+        total,
+        page: query.page,
+        limit: query.limit,
+        totalPages: Math.ceil(total / query.limit),
+      },
+    };
   }
 }

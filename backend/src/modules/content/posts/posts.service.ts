@@ -36,4 +36,29 @@ export class PostsService {
 
     return post;
   }
+
+  async findAll(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+
+    const [posts, total] = await Promise.all([
+      this.prisma.post.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          languages: true,
+          user: {
+            select: {
+              id: true,
+              user_name: true,
+              user_photo: true,
+              seniority_id: true,
+            },
+          },
+        },
+      }),
+      this.prisma.post.count(),
+    ]);
+    return { posts, total };
+  }
 }
