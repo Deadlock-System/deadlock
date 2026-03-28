@@ -1,73 +1,62 @@
 import { env } from "../config/Env";
+import { useMutation } from "@tanstack/react-query";
+import { AppError } from "../utils/AppError";
 
-export async function signIn(data: { email: string; password: string }) {
-  const response = await fetch(`${env.apiURL}/signIn`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+export type SignInInput = { email: string; password: string };
+export type SignInResponse = { accessToken: string; refreshToken: string };
 
-  const result = await response.json().catch(() => ({}));
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-  if (!response.ok) {
-    const message =
-      typeof result === "object" &&
-      result !== null &&
-      "message" in result &&
-      typeof (result as { message?: unknown }).message === "string"
-        ? (result as { message: string }).message
-        : "Erro ao fazer login";
-    throw new Error(message);
-  }
-
-  if (
-    typeof result !== "object" ||
-    result === null ||
-    !("accessToken" in result) ||
-    !("refreshToken" in result) ||
-    typeof (result as { accessToken: unknown }).accessToken !== "string" ||
-    typeof (result as { refreshToken: unknown }).refreshToken !== "string"
-  ) {
-    throw new Error("Resposta inválida do servidor");
-  }
-
-  return result as { accessToken: string; refreshToken: string };
+function getErrorCode(payload: any, status: number) {
+  return typeof payload?.code === "string" ? payload.code : `HTTP_${status}`;
 }
 
-export async function loginWithGoogle(credential: string) {
-  const response = await fetch(`${env.apiURL}/auth/google`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ credential }),
+async function request<T>(params: {
+  path: string;
+  method?: HttpMethod;
+  body?: Record<string, unknown>;
+}): Promise<T> {
+  const method = params.method ?? (params.body === undefined ? "GET" : "POST");
+  const hasBody = params.body !== undefined && method !== "GET";
+
+  const response = await fetch(`${env.apiURL}${params.path}`, {
+    method,
+    headers: hasBody ? { "Content-Type": "application/json" } : undefined,
+    body: hasBody ? JSON.stringify(params.body) : undefined,
+    credentials: "include",
   });
 
-  const result = await response.json().catch(() => ({}));
+  const payload = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const message =
-      typeof result === "object" &&
-      result !== null &&
-      "message" in result &&
-      typeof (result as { message?: unknown }).message === "string"
-        ? (result as { message: string }).message
-        : "Erro ao entrar com Google";
-    throw new Error(message);
+    throw new AppError({
+      code: getErrorCode(payload, response.status),
+      status: response.status,
+      details: payload,
+    });
   }
 
-  if (
-    typeof result !== "object" ||
-    result === null ||
-    !("accessToken" in result) ||
-    !("refreshToken" in result) ||
-    typeof (result as { accessToken: unknown }).accessToken !== "string" ||
-    typeof (result as { refreshToken: unknown }).refreshToken !== "string"
-  ) {
-    throw new Error("Resposta inválida do servidor");
-  }
+  return payload as T;
+}
 
-  return result as { accessToken: string; refreshToken: string; isNewUser?: boolean };
+async function signInRequest(data: SignInInput): Promise<SignInResponse> {
+  return request<SignInResponse>({
+    path: "/signIn",
+    method: "POST",
+    body: { email: data.email.trim(), password: data.password },
+  });
+}
+
+export function useSignIn() {
+  return useMutation<SignInResponse, AppError, SignInInput>({
+    mutationFn: signInRequest,
+  });
+}
+
+export function getGithubLoginUrl() {
+  return `${env.apiURL}/auth/github`;
+}
+
+export function getGoogleLoginUrl() {
+  return `${env.apiURL}/auth/google`;
 }
