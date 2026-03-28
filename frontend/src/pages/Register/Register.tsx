@@ -292,6 +292,31 @@ export default function Register() {
             <div className="registerOauthRow">
               {googleEnabled ? (
                 <a className="registerOauthGithub" href={getGoogleAuthUrl()}>
+                  <span className="registerOauthGithubIcon" aria-hidden="true">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M21.6 12.273c0-.709-.064-1.39-.182-2.045H12v3.869h5.386a4.605 4.605 0 0 1-1.999 3.02v2.51h3.232c1.89-1.741 2.98-4.305 2.98-7.354Z"
+                        fill="#4285F4"
+                      />
+                      <path
+                        d="M12 22c2.7 0 4.96-.895 6.613-2.423l-3.232-2.51c-.895.6-2.04.955-3.381.955-2.605 0-4.81-1.759-5.597-4.123H3.062v2.591A9.996 9.996 0 0 0 12 22Z"
+                        fill="#34A853"
+                      />
+                      <path
+                        d="M6.403 13.9A5.99 5.99 0 0 1 6.09 12c0-.66.114-1.3.313-1.9V7.51H3.062A9.996 9.996 0 0 0 2 12c0 1.614.386 3.14 1.062 4.49l3.341-2.59Z"
+                        fill="#FBBC05"
+                      />
+                      <path
+                        d="M12 5.978c1.468 0 2.785.504 3.822 1.495l2.867-2.868C16.955 2.99 14.696 2 12 2A9.996 9.996 0 0 0 3.062 7.51l3.341 2.59C7.19 7.737 9.395 5.978 12 5.978Z"
+                        fill="#EA4335"
+                      />
+                    </svg>
+                  </span>
                   <span>Sign up with Google</span>
                 </a>
               ) : (
