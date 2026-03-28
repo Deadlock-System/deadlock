@@ -82,7 +82,8 @@ model Post {
 
 model Language {
   id   Int    @id @default(autoincrement()) @db.SmallInt
-  name String @unique
+  slug String @unique
+  name String
 
   posts Post[]
 }

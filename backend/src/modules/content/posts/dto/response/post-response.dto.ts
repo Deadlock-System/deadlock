@@ -30,6 +30,9 @@ export class PostResponseDto {
   @Expose()
   readonly views: number;
 
+  @Expose()
+  readonly languages: string[];
+
   constructor(partial: Partial<Post>, currentUserId?: string) {
     Object.assign(this, partial);
 

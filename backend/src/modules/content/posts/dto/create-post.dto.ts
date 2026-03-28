@@ -1,4 +1,11 @@
-import { IsBoolean, IsString, MaxLength } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export class CreatePostDto {
   @IsString()
@@ -11,4 +18,10 @@ export class CreatePostDto {
 
   @IsBoolean()
   anonymous: boolean;
+
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMaxSize(5, { message: 'Você só pode adicionar até 5 linguagens.' })
+  @IsOptional()
+  languages?: string[];
 }
