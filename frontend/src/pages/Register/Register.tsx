@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
-import { createUser, registerWithGoogle } from "../../services/RegisterService";
+import { useState } from "react";
+import { getGithubAuthUrl, getGoogleAuthUrl, useCreateUser } from "../../services/RegisterService";
 import type { Seniority } from "../../types/RegisterType";
 import Input from "../../components/Input/Input";
 import Select from "../../components/Select/Select";
@@ -8,7 +7,6 @@ import Select from "../../components/Select/Select";
 import logo from "../../assets/logo-deadlock-sem-fundo.png";
 import "./Register.css";
 import { getErrorMessage } from "../../utils/ErrorMessage";
-import { env } from "../../config/Env";
 
 type FormState = {
   username: string;
@@ -20,7 +18,6 @@ type FormState = {
 
 export default function Register() {
   const googleEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPasswordHint, setShowPasswordHint] = useState(false);
   const [form, setForm] = useState<FormState>({
     username: "",
@@ -36,6 +33,8 @@ export default function Register() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const createUserMutation = useCreateUser();
+  const isSubmitting = createUserMutation.isPending;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -52,14 +51,24 @@ export default function Register() {
     });
   };
 
-  const getErrorText = (error: unknown, fallback: string) => {
-    if (typeof error === "object" && error !== null && "message" in error) {
-      const message = (error as { message: unknown }).message;
-      if (Array.isArray(message)) {
-        return message.map(String).join("\n");
-      }
+  const getRegisterErrorText = (error: unknown, fallback: string) => {
+    const code =
+      typeof (error as { code?: unknown } | null)?.code === "string"
+        ? (error as { code: string }).code
+        : null;
+
+    switch (code) {
+      case "EMAIL_ALREADY_EXISTS":
+        return "E-mail já cadastrado";
+      case "USERNAME_ALREADY_EXISTS":
+        return "Nome de usuário já cadastrado";
+      case "INVALID_PASSWORD":
+        return "As senhas não coincidem";
+      case "INVALID_REQUEST_FORMAT":
+        return "Corrija os campos destacados";
+      default:
+        return getErrorMessage(error, fallback);
     }
-    return getErrorMessage(error, fallback);
   };
 
   const isStrongPassword = (password: string) =>
@@ -117,9 +126,8 @@ export default function Register() {
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      await createUser({
+      await createUserMutation.mutateAsync({
         email: form.email.trim(),
         username: form.username.trim(),
         password: form.password,
@@ -137,79 +145,23 @@ export default function Register() {
       });
       setFieldErrors({});
     } catch (error: unknown) {
-      const text = getErrorText(error, "Erro ao cadastrar usuário");
+      const text = getRegisterErrorText(error, "Erro ao cadastrar usuário");
       setFormMessage({ type: "error", text });
-      const normalized = text.toLowerCase();
-      if (normalized.includes("e-mail inválido") || normalized.includes("e-mail invalido")) {
-        setFieldErrors((prev) => ({ ...prev, email: "E-mail inválido" }));
+      const code =
+        typeof (error as { code?: unknown } | null)?.code === "string"
+          ? (error as { code: string }).code
+          : null;
+      if (code === "EMAIL_ALREADY_EXISTS") {
+        setFieldErrors((prev) => ({ ...prev, email: "E-mail já cadastrado" }));
       }
-      if (normalized.includes("senha deve conter") || normalized.includes("senha deve conter pelo menos")) {
-        setFieldErrors((prev) => ({
-          ...prev,
-          password:
-            "A senha deve conter pelo menos 8 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial",
-        }));
+      if (code === "USERNAME_ALREADY_EXISTS") {
+        setFieldErrors((prev) => ({ ...prev, username: "Nome de usuário já cadastrado" }));
       }
-      if (normalized.includes("confirma") && normalized.includes("senha")) {
-        setFieldErrors((prev) => ({
-          ...prev,
-          confirmPassword: "As senhas não coincidem",
-        }));
+      if (code === "INVALID_PASSWORD") {
+        setFieldErrors((prev) => ({ ...prev, confirmPassword: "As senhas não coincidem" }));
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
-
-  const handleGoogleRegister = async (
-    credentialResponse: CredentialResponse
-  ) => {
-    setIsSubmitting(true);
-    try {
-      const credential = credentialResponse.credential;
-      if (!credential) {
-        throw new Error("Resposta do Google inválida");
-      }
-
-      const result = await registerWithGoogle(credential);
-      if (result.isNewUser === false) {
-        setFormMessage({ type: "error", text: "Essa conta já foi cadastrada!" });
-        return;
-      }
-      setFormMessage({ type: "success", text: "Usuário cadastrado com sucesso!" });
-    } catch (error: unknown) {
-      setFormMessage({
-        type: "error",
-        text: getErrorText(error, "Erro ao cadastrar com Google"),
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  useEffect(() => {
-    const hash = window.location.hash.replace(/^#/, "");
-    if (!hash) return;
-
-    const params = new URLSearchParams(hash);
-    const provider = params.get("provider");
-    const isNewUser = params.get("isNewUser");
-    const accessToken = params.get("accessToken");
-    const refreshToken = params.get("refreshToken");
-
-    if (provider === "github" && accessToken && refreshToken) {
-      if (isNewUser === "false") {
-        setFormMessage({ type: "error", text: "Essa conta já foi cadastrada!" });
-      } else {
-        setFormMessage({ type: "success", text: "Usuário cadastrado com sucesso!" });
-      }
-      window.history.replaceState(
-        null,
-        "",
-        window.location.pathname + window.location.search
-      );
-    }
-  }, []);
 
   return (
     <div className="registerPage">
@@ -339,14 +291,9 @@ export default function Register() {
 
             <div className="registerOauthRow">
               {googleEnabled ? (
-                <GoogleLogin
-                  onSuccess={(credentialResponse) => {
-                    void handleGoogleRegister(credentialResponse);
-                  }}
-                  onError={() => setFormMessage({ type: "error", text: "Login com Google falhou" })}
-                  text="signup_with"
-                  shape="pill"
-                />
+                <a className="registerOauthGithub" href={getGoogleAuthUrl()}>
+                  <span>Sign up with Google</span>
+                </a>
               ) : (
                 <button
                   type="button"
@@ -363,7 +310,7 @@ export default function Register() {
                 </button>
               )}
 
-              <a className="registerOauthGithub" href={`${env.apiURL}/auth/github`}>
+              <a className="registerOauthGithub" href={getGithubAuthUrl()}>
                 <span className="registerOauthGithubIcon" aria-hidden="true">
                   <svg
                     width="18"
