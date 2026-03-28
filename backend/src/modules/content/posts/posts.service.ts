@@ -9,6 +9,10 @@ export class PostsService {
   async createPost(createPostDto: CreatePostDto, userId: string) {
     const { languages, ...dtoData } = createPostDto;
 
+    const validLanguages = languages
+      ? languages.map((lang) => lang.trim()).filter((lang) => lang.length > 0)
+      : [];
+
     const post = await this.prisma.post.create({
       data: {
         ...dtoData,
@@ -16,13 +20,13 @@ export class PostsService {
         languages:
           languages && languages.length > 0
             ? {
-                connectOrCreate: languages.map((originalName) => {
-                  const slug = originalName.toLowerCase().trim();
+                connectOrCreate: validLanguages.map((name) => {
+                  const slug = name.toLowerCase().trim();
                   return {
                     where: { slug: slug },
                     create: {
                       slug: slug,
-                      name: originalName.trim(),
+                      name: name.trim(),
                     },
                   };
                 }),
@@ -31,6 +35,14 @@ export class PostsService {
       },
       include: {
         languages: true,
+        user: {
+          select: {
+            id: true,
+            user_name: true,
+            user_photo: true,
+            seniority_id: true,
+          },
+        },
       },
     });
 
