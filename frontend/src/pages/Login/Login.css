@@ -69,6 +69,27 @@ body {
   color: #263f4c;
 }
 
+.loginMessage {
+  width: min(520px, 100%);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-weight: 800;
+  text-align: center;
+  white-space: pre-line;
+}
+
+.loginMessageSuccess {
+  background: rgba(21, 128, 61, 0.1);
+  color: #166534;
+  border: 1px solid rgba(21, 128, 61, 0.25);
+}
+
+.loginMessageError {
+  background: rgba(185, 28, 28, 0.08);
+  color: #7f1d1d;
+  border: 1px solid rgba(185, 28, 28, 0.25);
+}
+
 .loginOauthRow {
   width: 100%;
   display: flex;

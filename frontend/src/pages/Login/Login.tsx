@@ -1,24 +1,53 @@
-import { useState } from "react";
-import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
+import { useMemo, useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Input from "../../components/Input/Input";
 import logo from "../../assets/logo-deadlock-sem-fundo.png";
 import "./Login.css";
-import { getErrorMessage } from "../../utils/ErrorMessage";
-import { env } from "../../config/Env";
-import { loginWithGoogle, signIn } from "../../services/LoginService";
+import {
+  getGithubLoginUrl,
+  getGoogleLoginUrl,
+  useSignIn,
+} from "../../services/LoginService";
 
 type FormState = {
   email: string;
   password: string;
 };
 
+function getLoginErrorText(error: unknown, fallback: string) {
+  const code = typeof (error as { code?: unknown } | null)?.code === "string" ? (error as { code: string }).code : null;
+  switch (code) {
+    case "INVALID_CREDENTIALS":
+      return "Usuário não cadastrado ou senha incorreta!";
+    case "INVALID_RESPONSE":
+      return "Resposta inválida do servidor";
+    default:
+      return fallback;
+  }
+}
+
 export default function Login() {
+  const queryClient = useMemo(() => new QueryClient(), []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <LoginContent />
+    </QueryClientProvider>
+  );
+}
+
+function LoginContent() {
   const googleEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState<FormState>({
     email: "",
     password: "",
   });
+  const [formMessage, setFormMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const signInMutation = useSignIn();
+  const isSubmitting = signInMutation.isPending;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({
@@ -27,79 +56,22 @@ export default function Login() {
     }));
   };
 
-  const validateForm = (): string | null => {
-    const email = form.email.trim();
-    const password = form.password;
-
-    if (!email) return "Informe seu e-mail";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "E-mail inválido";
-    if (!password) return "Informe sua senha";
-    if (password.length < 6) return "A senha deve ter no mínimo 6 caracteres";
-
-    return null;
-  };
-
-  const saveTokens = (tokens: { accessToken: string; refreshToken: string }) => {
-    localStorage.setItem("accessToken", tokens.accessToken);
-    localStorage.setItem("refreshToken", tokens.refreshToken);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const validationMessage = validateForm();
-    if (validationMessage) {
-      alert(validationMessage);
-      return;
-    }
-
-    setIsSubmitting(true);
     try {
-      const result = await signIn({
+      setFormMessage(null);
+      await signInMutation.mutateAsync({
         email: form.email.trim(),
         password: form.password,
       });
-      saveTokens({
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-      });
 
-      alert("Login realizado com sucesso!");
+      setFormMessage({ type: "success", text: "Login realizado com sucesso!" });
     } catch (error: unknown) {
-      const message = getErrorMessage(error, "Erro ao fazer login");
-      const normalized = message.toLowerCase();
-      if (normalized.includes("credenciais inválidas") || normalized.includes("credenciais invalidas")) {
-        alert("Usuário não cadastrado ou senha incorreta!");
-        return;
-      }
-      alert(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
-    setIsSubmitting(true);
-    try {
-      const credential = credentialResponse.credential;
-      if (!credential) {
-        throw new Error("Resposta do Google inválida");
-      }
-      const result = await loginWithGoogle(credential);
-      if (result.isNewUser === true) {
-        alert("Usuário não cadastrado! Faça o cadastro antes de entrar.");
-        return;
-      }
-      saveTokens({
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
+      setFormMessage({
+        type: "error",
+        text: getLoginErrorText(error, "Erro ao fazer login"),
       });
-
-      alert("Login realizado com sucesso!");
-    } catch (error: unknown) {
-      alert(getErrorMessage(error, "Erro ao entrar com Google"));
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -112,6 +84,19 @@ export default function Login() {
         <div className="loginContent">
           <form className="loginForm" onSubmit={(e) => void handleSubmit(e)}>
             <h2 className="loginTitle">Entre na sua conta</h2>
+
+            {formMessage ? (
+              <div
+                className={
+                  formMessage.type === "success"
+                    ? "loginMessage loginMessageSuccess"
+                    : "loginMessage loginMessageError"
+                }
+                role={formMessage.type === "error" ? "alert" : "status"}
+              >
+                {formMessage.text}
+              </div>
+            ) : null}
 
             <div className="loginGrid">
               <Input
@@ -139,22 +124,18 @@ export default function Login() {
 
             <div className="loginOauthRow">
               {googleEnabled ? (
-                <GoogleLogin
-                  onSuccess={(credentialResponse) => {
-                    void handleGoogleLogin(credentialResponse);
-                  }}
-                  onError={() => {
-                    alert("Login com Google falhou");
-                  }}
-                  text="signin_with"
-                  shape="pill"
-                />
+                <a className="loginOauthGithub" href={getGoogleLoginUrl()}>
+                  <span>Sign in with Google</span>
+                </a>
               ) : (
                 <button
                   type="button"
                   className="loginOauthFallback"
                   onClick={() => {
-                    alert("Configure VITE_GOOGLE_CLIENT_ID para habilitar o Google");
+                    setFormMessage({
+                      type: "error",
+                      text: "Configure VITE_GOOGLE_CLIENT_ID para habilitar o Google",
+                    });
                   }}
                   disabled={isSubmitting}
                 >
@@ -162,7 +143,7 @@ export default function Login() {
                 </button>
               )}
 
-              <a className="loginOauthGithub" href={`${env.apiURL}/auth/github`}>
+              <a className="loginOauthGithub" href={getGithubLoginUrl()}>
                 <span className="loginOauthGithubIcon" aria-hidden="true">
                   <svg
                     width="18"
