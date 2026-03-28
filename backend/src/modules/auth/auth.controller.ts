@@ -12,6 +12,7 @@ import { SignInDto } from './dto/sign-in.dto';
 import { SignInResponseDto } from './dto/sign-in-response.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { GithubAuthGuard } from './guards/github-auth.guard';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { User } from '../user/entities/user.entity';
 import type { Response } from 'express';
 
@@ -27,6 +28,21 @@ export class AuthController {
   @Post('auth/refreshToken')
   refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshToken(refreshTokenDto);
+  }
+
+  @Get('auth/google')
+  @UseGuards(GoogleAuthGuard)
+  async googleLogin() {
+    console.log('Google Login');
+  }
+
+  @Get('auth/google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleCallback(@Req() req, @Res() res: Response) {
+    const user = req.user as any;
+    console.log(`Google Profile: ${user}`);
+
+    return res.json(req.user);
   }
 
   @Get('auth/github')
@@ -53,6 +69,6 @@ export class AuthController {
       sameSite: 'lax',
     });
 
-    // return res.redirect('http://localhost:3000/');
+    return res.redirect('http://localhost:3000/');
   }
 }

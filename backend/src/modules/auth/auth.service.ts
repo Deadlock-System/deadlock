@@ -3,6 +3,7 @@ import { SignInDto } from './dto/sign-in.dto';
 import { SignInUseCase } from './useCases/sign-in.usecase';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { TokenService } from './services/token-service';
+import { UserNotFoundException } from '../user/exceptions/user.exceptions';
 import { AuthRepository } from './repositories/auth.repository';
 import { UserRepository } from '../user/repositories/user.repository';
 import { compare } from 'bcrypt';
@@ -10,7 +11,6 @@ import {
   InvalidRefreshTokenException,
   RefreshTokenNotFoundException,
 } from './exceptions/auth.exceptions';
-import { UserNotFoundException } from '../user/exceptions/user.exceptions';
 
 @Injectable()
 export class AuthService {
