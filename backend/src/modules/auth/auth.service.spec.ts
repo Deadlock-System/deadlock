@@ -2,28 +2,25 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { SignInUseCase } from './useCases/sign-in.usecase';
 import { TokenService } from './services/token-service';
-import { AuthRepository } from './repositories/auth.repository';
 import { hash } from 'bcrypt';
 import {
   mockSignInDto,
   mockSignInResponse,
-  mockRefreshDto,
   mockAuthRepository,
   mockSignInUseCase,
   mockTokenService,
 } from './mocks/auth.mocks';
-import { UserRepository } from '../user/repositories/user.repository';
 import { AuthErrorCode } from 'src/common/exceptions/error-codes/auth-error-codes';
 import { AuthErrorMessages } from 'src/common/exceptions/error-messages/auth-error-messages';
+import { AuthRepository } from './repositories/auth.repository';
+import { UserRepository } from '../user/repositories/user.repository';
 
-//! Mock User
 const mockUserRepository = {
   findByUserId: jest.fn(),
 };
 
 describe('AuthService', () => {
   let service: AuthService;
-  let repository: AuthRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -37,7 +34,6 @@ describe('AuthService', () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    repository = module.get<AuthRepository>(AuthRepository);
   });
 
   afterEach(() => {
@@ -49,7 +45,7 @@ describe('AuthService', () => {
   });
 
   describe('authenticate', () => {
-    it('should be execute signInUseCase with SignInDto', async () => {
+    it('should execute signInUseCase with SignInDto', async () => {
       mockSignInUseCase.execute.mockResolvedValue(mockSignInResponse);
 
       const result = await service.authenticate(mockSignInDto);
@@ -61,16 +57,21 @@ describe('AuthService', () => {
 
   describe('refreshToken', () => {
     it('should throw UnauthorizedException if token is invalid', async () => {
-      const invalidTokenHash = await hash('asdlkaoskdpoaskd', 10);
-      mockAuthRepository.findByUserId.mockResolvedValue({
-        id: 'token-id',
-        userId: mockRefreshDto.userId,
-        token: invalidTokenHash,
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 9999 * 60 * 60),
+      const token = 'qweqweqwe';
+      const userId = '10936e59-8c04-458a-9439-d27f04a51eb8';
+
+      mockTokenService.verifyRefreshToken = jest.fn().mockReturnValue({
+        sub: userId,
       });
 
-      await expect(service.refreshToken(mockRefreshDto)).rejects.toMatchObject({
+      const invalidTokenHash = await hash('asdasdasdasd', 10);
+
+      mockAuthRepository.findByUserId.mockResolvedValue({
+        userId,
+        token: invalidTokenHash,
+      });
+
+      await expect(service.refreshToken(token)).rejects.toMatchObject({
         code: AuthErrorCode.INVALID_REFRESH_TOKEN,
         message: AuthErrorMessages.INVALID_REFRESH_TOKEN,
         status: 401,
@@ -79,38 +80,35 @@ describe('AuthService', () => {
 
     it('should return new tokens if valid', async () => {
       const token = 'asdlkaoskdpoaskd';
+      const userId = '10936e598c04';
       const hashedToken = await hash(token, 10);
 
-      const refreshData = {
-        id: 'token-id',
-        userId: mockRefreshDto.userId,
-        token: hashedToken,
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 9999 * 60 * 60),
-      };
+      mockTokenService.verifyRefreshToken = jest.fn().mockReturnValue({
+        sub: userId,
+      });
 
-      mockAuthRepository.findByUserId.mockResolvedValue(refreshData);
+      mockAuthRepository.findByUserId.mockResolvedValue({
+        userId,
+        token: hashedToken,
+      });
+
       mockUserRepository.findByUserId.mockResolvedValue({
-        id: mockRefreshDto.userId,
+        id: userId,
         username: 'nameExample',
       });
+
       mockTokenService.generateAccessToken.mockReturnValue('accessToken');
       mockTokenService.generateRefreshToken.mockReturnValue('newRefreshToken');
 
-      const refreshDto = { ...mockRefreshDto, refreshToken: token };
-      const result = await service.refreshToken(refreshDto);
+      const result = await service.refreshToken(token);
 
       expect(result).toEqual({
         accessToken: 'accessToken',
         refreshToken: 'newRefreshToken',
       });
 
-      expect(mockAuthRepository.findByUserId).toHaveBeenCalledWith(
-        mockRefreshDto.userId,
-      );
-      expect(mockUserRepository.findByUserId).toHaveBeenCalledWith(
-        mockRefreshDto.userId,
-      );
+      expect(mockAuthRepository.findByUserId).toHaveBeenCalledWith(userId);
+      expect(mockUserRepository.findByUserId).toHaveBeenCalledWith(userId);
       expect(mockTokenService.generateAccessToken).toHaveBeenCalled();
       expect(mockTokenService.generateRefreshToken).toHaveBeenCalled();
     });
