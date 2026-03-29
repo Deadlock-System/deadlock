@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../user.repository';
 import { User } from '../../entities/user.entity';
 import { UserMapper } from '../../mappers/user.mapper';
-import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { OAuthLoginDto } from 'src/modules/auth/dto/oauth-login.dto';
 
 @Injectable()

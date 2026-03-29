@@ -23,15 +23,15 @@ enum ProviderType {
 }
 
 model User {
-  id              String   @id @default(uuid())
-  email           String?  @unique
-  user_name       String   @unique
+  id              String    @id @default(uuid())
+  email           String?   @unique
+  user_name       String    @unique
   user_photo      String?
   hashed_password String?
-  createdAt       DateTime @default(now()) @db.Timestamp(3)
+  createdAt       DateTime  @default(now()) @db.Timestamp(3)
   seniority_id    Seniority @default(NOT_SELECTED)
 
-  providers       UserProvider[]
+  providers UserProvider[]
 
   posts         Post[]
   likesPosts    Likes_Posts[]
@@ -42,80 +42,58 @@ model User {
 }
 
 model UserProvider {
-  id         String   @id @default(uuid())
+  id         String       @id @default(uuid())
   provider   ProviderType
   providerId String
-  user       User     @relation(fields: [userId], references: [id])
+  user       User         @relation(fields: [userId], references: [id])
   userId     String
-  createdAt  DateTime @default(now()) @db.Timestamp(3)
+  createdAt  DateTime     @default(now()) @db.Timestamp(3)
 
   @@unique([provider, providerId])
   @@unique([userId, provider])
 }
 
-
 model RefreshToken {
-  id              String   @id @default(uuid())
-  token           String
-  expires_at      DateTime
-  createdAt       DateTime @default(now()) @db.Timestamp(3) 
+  id         String   @id @default(uuid())
+  token      String
+  expires_at DateTime
+  createdAt  DateTime @default(now()) @db.Timestamp(3)
 
-  user_id         String @unique
-  user            User @relation(fields: [user_id], references: [id])
+  user_id String @unique
+  user    User   @relation(fields: [user_id], references: [id])
 }
 
 model Post {
   id        String   @id @default(uuid())
-  title     String
+  title     String   @db.VarChar(255)
   anonymous Boolean
+  content   String   @db.VarChar(20000)
   views     Int      @default(0)
   createdAt DateTime @default(now()) @db.Timestamp(3)
 
   user_id String
   user    User   @relation(fields: [user_id], references: [id])
 
-  snippets   Snippet[]
   comments   Comment[]
-  languages  Languages_posts[]
+  languages  Language[]
   likesPosts Likes_Posts[]
   postsSaves Posts_Saves[]
 }
 
 model Language {
   id   Int    @id @default(autoincrement()) @db.SmallInt
+  slug String @unique
   name String
 
-  snippets Snippet[]
-  posts    Languages_posts[]
-}
-
-model Languages_posts {
-  post_id     String
-  language_id Int    @db.SmallInt
-
-  post     Post     @relation(fields: [post_id], references: [id])
-  language Language @relation(fields: [language_id], references: [id])
-
-  @@id([post_id, language_id])
-}
-
-model Snippet {
-  id      String @id @default(uuid())
-  content String
-
-  post_id     String
-  language_id Int    @db.SmallInt
-
-  post     Post     @relation(fields: [post_id], references: [id])
-  language Language @relation(fields: [language_id], references: [id])
+  posts Post[]
 }
 
 model Comment {
   id                String   @id @default(uuid())
   post_id           String
   parent_comment_id String?
-  data_criacao      DateTime @default(now())
-  conteudo          String
+  createdAt         DateTime @default(now())
+  content           String   @db.VarChar(10000)
 
   post          Post             @relation(fields: [post_id], references: [id])
   parent        Comment?         @relation("CommentToComment", fields: [parent_comment_id], references: [id])
