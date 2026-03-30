@@ -1,6 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
+import { Prisma } from '@prisma/client';
+
+const POST_DEFAULT_INCLUDES = Prisma.validator<Prisma.PostInclude>()({
+  languages: true,
+  user: {
+    select: {
+      id: true,
+      user_name: true,
+      user_photo: true,
+      seniority_id: true,
+    },
+  },
+});
 
 @Injectable()
 export class PostsService {
@@ -9,41 +22,13 @@ export class PostsService {
   async createPost(createPostDto: CreatePostDto, userId: string) {
     const { languages, ...dtoData } = createPostDto;
 
-    const validLanguages = languages
-      ? languages.map((lang) => lang.trim()).filter((lang) => lang.length > 0)
-      : [];
-
     const post = await this.prisma.post.create({
       data: {
         ...dtoData,
         user_id: userId,
-        languages:
-          languages && languages.length > 0
-            ? {
-                connectOrCreate: validLanguages.map((name) => {
-                  const slug = name.toLowerCase().trim();
-                  return {
-                    where: { slug: slug },
-                    create: {
-                      slug: slug,
-                      name: name.trim(),
-                    },
-                  };
-                }),
-              }
-            : undefined,
+        languages: this.buildLanguagesPayload(languages, false),
       },
-      include: {
-        languages: true,
-        user: {
-          select: {
-            id: true,
-            user_name: true,
-            user_photo: true,
-            seniority_id: true,
-          },
-        },
-      },
+      include: POST_DEFAULT_INCLUDES,
     });
 
     return post;
@@ -57,20 +42,34 @@ export class PostsService {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: {
-          languages: true,
-          user: {
-            select: {
-              id: true,
-              user_name: true,
-              user_photo: true,
-              seniority_id: true,
-            },
-          },
-        },
+        include: POST_DEFAULT_INCLUDES,
       }),
       this.prisma.post.count(),
     ]);
     return { posts, total };
+  }
+
+  private buildLanguagesPayload(
+    languages?: string[],
+    isUpdate: boolean = false,
+  ) {
+    if (!languages || languages.length === 0) return undefined;
+
+    const validLanguages = languages
+      .map((lang) => lang.trim())
+      .filter((lang) => lang.length > 0);
+
+    if (validLanguages.length === 0) return undefined;
+
+    return {
+      ...(isUpdate && { set: [] }),
+      connectOrCreate: validLanguages.map((name) => {
+        const slug = name.toLowerCase();
+        return {
+          where: { slug: slug },
+          create: { slug: slug, name: name },
+        };
+      }),
+    };
   }
 }
