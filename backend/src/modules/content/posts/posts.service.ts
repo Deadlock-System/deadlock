@@ -2,6 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { Prisma } from '@prisma/client';
+import { UpdatePostDto } from './dto/update-post.dto';
+import {
+  PostNotFoundException,
+  UserIsNotOwnerException,
+} from './exceptions/posts.exceptions';
 
 const POST_DEFAULT_INCLUDES = Prisma.validator<Prisma.PostInclude>()({
   languages: true,
@@ -47,6 +52,31 @@ export class PostsService {
       this.prisma.post.count(),
     ]);
     return { posts, total };
+  }
+
+  async updatePost(
+    postId: string,
+    updatePostDto: UpdatePostDto,
+    userId: string,
+  ) {
+    const existingPost = await this.prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!existingPost) throw new PostNotFoundException();
+
+    if (existingPost.user_id !== userId) throw new UserIsNotOwnerException();
+
+    const updatedPost = await this.prisma.post.update({
+      where: { id: postId },
+      data: {
+        ...updatePostDto,
+        languages: this.buildLanguagesPayload(updatePostDto.languages, true),
+      },
+      include: POST_DEFAULT_INCLUDES,
+    });
+
+    return updatedPost;
   }
 
   private buildLanguagesPayload(

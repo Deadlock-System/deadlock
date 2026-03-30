@@ -3,6 +3,8 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -15,6 +17,7 @@ import { GetUserId } from 'src/modules/auth/decorators/get-user-id.decorator';
 import { PostResponseDto } from './dto/response/post-response.dto';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { OptionalJwtAuthGuard } from 'src/modules/auth/guards/optional-jwt.guard';
+import { UpdatePostDto } from './dto/update-post.dto';
 
 @Controller('posts')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -54,5 +57,21 @@ export class PostsController {
         totalPages: Math.ceil(total / query.limit),
       },
     };
+  }
+
+  @Patch(':id')
+  @UseGuards(AuthGuard('jwt'))
+  async updatePost(
+    @Param('id') postId: string,
+    @Body() updatePostDto: UpdatePostDto,
+    @GetUserId() userId: string,
+  ) {
+    const updatedPost = await this.postsService.updatePost(
+      postId,
+      updatePostDto,
+      userId,
+    );
+
+    return new PostResponseDto(updatedPost, userId);
   }
 }
