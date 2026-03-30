@@ -54,6 +54,17 @@ export class PostsService {
     return { posts, total };
   }
 
+  async findOneById(postId: string) {
+    const existingPost = await this.prisma.post.findUnique({
+      where: { id: postId },
+      include: POST_DEFAULT_INCLUDES,
+    });
+
+    if (!existingPost) throw new PostNotFoundException();
+
+    return existingPost;
+  }
+
   async updatePost(
     postId: string,
     updatePostDto: UpdatePostDto,

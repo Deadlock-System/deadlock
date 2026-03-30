@@ -59,6 +59,14 @@ export class PostsController {
     };
   }
 
+  @Get(':id')
+  @UseGuards(OptionalJwtAuthGuard)
+  async findOneById(@Param('id') postId: string, @GetUserId() userId: string) {
+    const post = await this.postsService.findOneById(postId);
+
+    return new PostResponseDto(post, userId);
+  }
+
   @Patch(':id')
   @UseGuards(AuthGuard('jwt'))
   async updatePost(
