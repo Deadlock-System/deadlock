@@ -36,6 +36,9 @@ export class PostResponseDto {
   readonly createdAt: Date;
 
   @Expose()
+  readonly updatedAt: Date;
+
+  @Expose()
   readonly views: number;
 
   @Expose()

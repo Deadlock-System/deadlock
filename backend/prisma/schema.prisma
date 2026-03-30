@@ -70,6 +70,7 @@ model Post {
   content   String   @db.VarChar(20000)
   views     Int      @default(0)
   createdAt DateTime @default(now()) @db.Timestamp(3)
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamp(3)
 
   user_id String
   user    User   @relation(fields: [user_id], references: [id])

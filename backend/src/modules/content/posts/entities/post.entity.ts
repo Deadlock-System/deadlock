@@ -7,5 +7,6 @@ export class PostEntity implements Post {
   content: string;
   views: number;
   createdAt: Date;
+  updatedAt: Date;
   user_id: string;
 }
