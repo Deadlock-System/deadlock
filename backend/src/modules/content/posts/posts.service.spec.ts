@@ -3,7 +3,14 @@ import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { PostsService } from './posts.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
-import { Post } from '@prisma/client';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { HttpStatus } from '@nestjs/common';
+import {
+  PostNotFoundException,
+  UserIsNotOwnerException,
+} from './exceptions/posts.exceptions';
+import { PostErrorCode } from 'src/common/exceptions/error-codes/post-error.codes';
+import { PostErrorMessage } from 'src/common/exceptions/error-messages/post-error-messages';
 
 describe('PostsService', () => {
   let service: PostsService;
@@ -59,6 +66,7 @@ describe('PostsService', () => {
         languages: [],
         user: userSelectFields,
         createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       prisma.post.create.mockResolvedValue(expectedPost);
@@ -109,6 +117,7 @@ describe('PostsService', () => {
         ],
         user: userSelectFields,
         createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       prisma.post.create.mockResolvedValue(expectedPost);
@@ -170,6 +179,7 @@ describe('PostsService', () => {
         ],
         user: userSelectFields,
         createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       prisma.post.create.mockResolvedValue(expectedPost);
@@ -215,6 +225,7 @@ describe('PostsService', () => {
         languages: [{ slug: 'typescript', name: 'TypeScript' }],
         user: userSelectFields,
         createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       prisma.post.create.mockResolvedValue(expectedPost);
@@ -256,6 +267,7 @@ describe('PostsService', () => {
         languages: [],
         user: userSelectFields,
         createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       prisma.post.create.mockResolvedValue(expectedPost);
@@ -288,6 +300,7 @@ describe('PostsService', () => {
         languages: [],
         user: userSelectFields,
         createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       prisma.post.create.mockResolvedValue(expectedPost);
@@ -311,6 +324,7 @@ describe('PostsService', () => {
         languages: [{ slug: 'typescript', name: 'TypeScript' }],
         user: userSelectFields,
         createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         id: 'post-2',
@@ -322,6 +336,7 @@ describe('PostsService', () => {
         languages: [],
         user: userSelectFields,
         createdAt: new Date(),
+        updatedAt: new Date(),
       },
     ];
 
@@ -408,6 +423,331 @@ describe('PostsService', () => {
       expect(prisma.post.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { createdAt: 'desc' },
+        }),
+      );
+    });
+  });
+
+  describe('findOneById', () => {
+    const postId = 'post-id-mock';
+
+    it('should return a post when it exists', async () => {
+      const expectedPost = {
+        id: postId,
+        title: 'Test Post',
+        content: 'Test content',
+        anonymous: false,
+        user_id: 'user-id-mock',
+        views: 5,
+        languages: [{ slug: 'typescript', name: 'TypeScript' }],
+        user: userSelectFields,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      prisma.post.findUnique.mockResolvedValue(expectedPost);
+
+      const result = await service.findOneById(postId);
+
+      expect(result).toEqual(expectedPost);
+      expect(prisma.post.findUnique).toHaveBeenCalledWith({
+        where: { id: postId },
+        include: {
+          languages: true,
+          user: {
+            select: {
+              id: true,
+              user_name: true,
+              user_photo: true,
+              seniority_id: true,
+            },
+          },
+        },
+      });
+    });
+
+    it('should throw PostNotFoundException when post does not exist', async () => {
+      prisma.post.findUnique.mockResolvedValue(null);
+
+      await expect(service.findOneById(postId)).rejects.toThrow(
+        PostNotFoundException,
+      );
+
+      await expect(service.findOneById(postId)).rejects.toMatchObject({
+        code: PostErrorCode.POST_NOT_FOUND,
+        message: PostErrorMessage.POST_NOT_FOUND,
+        status: HttpStatus.NOT_FOUND,
+      });
+
+      expect(prisma.post.findUnique).toHaveBeenCalledWith({
+        where: { id: postId },
+        include: {
+          languages: true,
+          user: {
+            select: {
+              id: true,
+              user_name: true,
+              user_photo: true,
+              seniority_id: true,
+            },
+          },
+        },
+      });
+    });
+  });
+
+  describe('updatePost', () => {
+    const postId = 'post-id-mock';
+    const userId = 'user-id-mock';
+
+    const existingPost = {
+      id: postId,
+      title: 'Original Title',
+      content: 'Original content',
+      anonymous: false,
+      user_id: userId,
+      views: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    it('should update a post without languages', async () => {
+      const updatePostDto: UpdatePostDto = {
+        title: 'Updated Title',
+        content: 'Updated content',
+      };
+
+      const expectedUpdatedPost = {
+        ...existingPost,
+        title: 'Updated Title',
+        content: 'Updated content',
+        languages: [],
+        user: userSelectFields,
+      };
+
+      prisma.post.findUnique.mockResolvedValue(existingPost);
+      prisma.post.update.mockResolvedValue(expectedUpdatedPost);
+
+      const result = await service.updatePost(postId, updatePostDto, userId);
+
+      expect(result).toEqual(expectedUpdatedPost);
+      expect(prisma.post.findUnique).toHaveBeenCalledWith({
+        where: { id: postId },
+      });
+      expect(prisma.post.update).toHaveBeenCalledWith({
+        where: { id: postId },
+        data: {
+          title: updatePostDto.title,
+          content: updatePostDto.content,
+          languages: undefined,
+        },
+        include: {
+          languages: true,
+          user: {
+            select: {
+              id: true,
+              user_name: true,
+              user_photo: true,
+              seniority_id: true,
+            },
+          },
+        },
+      });
+    });
+
+    it('should update a post with languages using set and connectOrCreate', async () => {
+      const updatePostDto: UpdatePostDto = {
+        title: 'Updated Title',
+        languages: ['Rust', 'Go'],
+      };
+
+      const expectedUpdatedPost = {
+        ...existingPost,
+        title: 'Updated Title',
+        languages: [
+          { slug: 'rust', name: 'Rust' },
+          { slug: 'go', name: 'Go' },
+        ],
+        user: userSelectFields,
+      };
+
+      prisma.post.findUnique.mockResolvedValue(existingPost);
+      prisma.post.update.mockResolvedValue(expectedUpdatedPost);
+
+      const result = await service.updatePost(postId, updatePostDto, userId);
+
+      expect(result).toEqual(expectedUpdatedPost);
+      expect(prisma.post.update).toHaveBeenCalledWith({
+        where: { id: postId },
+        data: {
+          title: updatePostDto.title,
+          languages: {
+            set: [],
+            connectOrCreate: [
+              {
+                where: { slug: 'rust' },
+                create: { slug: 'rust', name: 'Rust' },
+              },
+              {
+                where: { slug: 'go' },
+                create: { slug: 'go', name: 'Go' },
+              },
+            ],
+          },
+        },
+        include: {
+          languages: true,
+          user: {
+            select: {
+              id: true,
+              user_name: true,
+              user_photo: true,
+              seniority_id: true,
+            },
+          },
+        },
+      });
+    });
+
+    it('should throw PostNotFoundException when post does not exist', async () => {
+      const updatePostDto: UpdatePostDto = { title: 'Updated Title' };
+
+      prisma.post.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.updatePost(postId, updatePostDto, userId),
+      ).rejects.toThrow(PostNotFoundException);
+
+      await expect(
+        service.updatePost(postId, updatePostDto, userId),
+      ).rejects.toMatchObject({
+        code: PostErrorCode.POST_NOT_FOUND,
+        message: PostErrorMessage.POST_NOT_FOUND,
+        status: HttpStatus.NOT_FOUND,
+      });
+
+      expect(prisma.post.update).not.toHaveBeenCalled();
+    });
+
+    it('should throw UserIsNotOwnerException when user is not the post owner', async () => {
+      const differentUserId = 'different-user-id';
+      const updatePostDto: UpdatePostDto = { title: 'Updated Title' };
+
+      prisma.post.findUnique.mockResolvedValue(existingPost);
+
+      await expect(
+        service.updatePost(postId, updatePostDto, differentUserId),
+      ).rejects.toThrow(UserIsNotOwnerException);
+
+      await expect(
+        service.updatePost(postId, updatePostDto, differentUserId),
+      ).rejects.toMatchObject({
+        code: PostErrorCode.USER_IS_NOT_OWNER,
+        message: PostErrorMessage.USER_IS_NOT_OWNER,
+        status: HttpStatus.FORBIDDEN,
+      });
+
+      expect(prisma.post.update).not.toHaveBeenCalled();
+    });
+
+    it('should trim language names and slugs on update', async () => {
+      const updatePostDto: UpdatePostDto = {
+        languages: ['  Python  ', '  Java  '],
+      };
+
+      const expectedUpdatedPost = {
+        ...existingPost,
+        languages: [
+          { slug: 'python', name: 'Python' },
+          { slug: 'java', name: 'Java' },
+        ],
+        user: userSelectFields,
+      };
+
+      prisma.post.findUnique.mockResolvedValue(existingPost);
+      prisma.post.update.mockResolvedValue(expectedUpdatedPost);
+
+      const result = await service.updatePost(postId, updatePostDto, userId);
+
+      expect(result).toEqual(expectedUpdatedPost);
+      expect(prisma.post.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            languages: {
+              set: [],
+              connectOrCreate: [
+                {
+                  where: { slug: 'python' },
+                  create: { slug: 'python', name: 'Python' },
+                },
+                {
+                  where: { slug: 'java' },
+                  create: { slug: 'java', name: 'Java' },
+                },
+              ],
+            },
+          }),
+        }),
+      );
+    });
+
+    it('should filter out empty language strings on update', async () => {
+      const updatePostDto: UpdatePostDto = {
+        languages: ['Rust', '   ', ''],
+      };
+
+      const expectedUpdatedPost = {
+        ...existingPost,
+        languages: [{ slug: 'rust', name: 'Rust' }],
+        user: userSelectFields,
+      };
+
+      prisma.post.findUnique.mockResolvedValue(existingPost);
+      prisma.post.update.mockResolvedValue(expectedUpdatedPost);
+
+      const result = await service.updatePost(postId, updatePostDto, userId);
+
+      expect(result).toEqual(expectedUpdatedPost);
+      expect(prisma.post.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            languages: {
+              set: [],
+              connectOrCreate: [
+                {
+                  where: { slug: 'rust' },
+                  create: { slug: 'rust', name: 'Rust' },
+                },
+              ],
+            },
+          }),
+        }),
+      );
+    });
+
+    it('should set languages as undefined when update languages array is empty', async () => {
+      const updatePostDto: UpdatePostDto = {
+        title: 'Updated Title',
+        languages: [],
+      };
+
+      const expectedUpdatedPost = {
+        ...existingPost,
+        title: 'Updated Title',
+        languages: [],
+        user: userSelectFields,
+      };
+
+      prisma.post.findUnique.mockResolvedValue(existingPost);
+      prisma.post.update.mockResolvedValue(expectedUpdatedPost);
+
+      await service.updatePost(postId, updatePostDto, userId);
+
+      expect(prisma.post.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            languages: undefined,
+          }),
         }),
       );
     });
