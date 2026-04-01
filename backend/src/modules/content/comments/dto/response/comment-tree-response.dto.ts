@@ -22,6 +22,11 @@ export class CommentTreeResponseDto {
   id: string;
 
   @Expose()
+  @Transform(
+    ({ value, obj }: { value: string; obj: CommentTreeResponseDto }) => {
+      return obj.deletedAt ? '[Comentário excluído]' : value;
+    },
+  )
   content: string;
 
   @Expose()
@@ -32,6 +37,9 @@ export class CommentTreeResponseDto {
 
   @Expose()
   updatedAt: Date;
+
+  @Expose()
+  deletedAt: Date | null;
 
   @Expose()
   parentCommentId: string | null;
@@ -48,9 +56,8 @@ export class CommentTreeResponseDto {
       value: CommentUserSummaryDto;
       obj: CommentTreeResponseDto;
     }) => {
-      if (obj.anonymous) {
-        return undefined;
-      }
+      if (obj.anonymous) return undefined;
+      if (obj.deletedAt) return undefined;
       return value;
     },
   )

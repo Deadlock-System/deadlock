@@ -4,7 +4,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { PostNotFoundException } from '../posts/exceptions/posts.exceptions';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import {
+  CommentAlreadyDeletedException,
   CommentNotFoundException,
+  CommentNotOwnerException,
   ParentCommentException,
 } from './exceptions/comments.exceptions';
 import { CommentTreeNode } from './interface/comments.interface';
@@ -80,6 +82,7 @@ export class CommentsService {
         anonymous: comment.anonymous,
         createdAt: comment.createdAt,
         updatedAt: comment.updatedAt,
+        deletedAt: comment.deletedAt,
         parentCommentId: comment.parent_comment_id,
         isOwner: comment.user_id === currentUserId,
         user: comment.user,
@@ -103,5 +106,27 @@ export class CommentsService {
     }
 
     return rootComments;
+  }
+
+  async deleteComment(commentId: string, userId: string) {
+    const existingComment = await this.prisma.comment.findUnique({
+      where: { id: commentId },
+    });
+    if (!existingComment) throw new CommentNotFoundException();
+
+    if (existingComment.user_id !== userId) {
+      throw new CommentNotOwnerException();
+    }
+
+    if (existingComment.deletedAt) {
+      throw new CommentAlreadyDeletedException();
+    }
+
+    await this.prisma.comment.update({
+      where: { id: commentId },
+      data: { deletedAt: new Date() },
+    });
+
+    return { message: 'Comentário excluído com sucesso.' };
   }
 }

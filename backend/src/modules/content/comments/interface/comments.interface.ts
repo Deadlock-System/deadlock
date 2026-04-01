@@ -6,6 +6,7 @@ export type CommentTreeNode = {
   anonymous: boolean;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date | null;
   parentCommentId: string | null;
   isOwner: boolean;
   user: UserInclude | null;

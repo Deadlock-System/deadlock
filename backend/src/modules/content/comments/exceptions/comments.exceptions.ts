@@ -22,3 +22,23 @@ export class ParentCommentException extends AppException {
     });
   }
 }
+
+export class CommentNotOwnerException extends AppException {
+  constructor() {
+    super({
+      code: CommentErrorCode.COMMENT_NOT_OWNER,
+      message: CommentErrorMessages.COMMENT_NOT_OWNER,
+      status: HttpStatus.FORBIDDEN,
+    });
+  }
+}
+
+export class CommentAlreadyDeletedException extends AppException {
+  constructor() {
+    super({
+      code: CommentErrorCode.COMMENT_ALREADY_DELETED,
+      message: CommentErrorMessages.COMMENT_ALREADY_DELETED,
+      status: HttpStatus.BAD_REQUEST,
+    });
+  }
+}

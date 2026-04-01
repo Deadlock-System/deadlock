@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { OptionalJwtAuthGuard } from 'src/modules/auth/guards/optional-jwt.guard';
 import { GetUserId } from 'src/modules/auth/decorators/get-user-id.decorator';
@@ -49,5 +57,14 @@ export class CommentsController {
     return plainToInstance(CommentTreeResponseDto, commentsTree, {
       excludeExtraneousValues: true,
     });
+  }
+
+  @Delete(':commentId')
+  @UseGuards(AuthGuard('jwt'))
+  async deleteComment(
+    @Param('commentId') commentId: string,
+    @GetUserId() userId: string,
+  ) {
+    return this.commentsService.deleteComment(commentId, userId);
   }
 }
