@@ -1,0 +1,4 @@
+export enum CommentErrorCode {
+  COMMENT_NOT_FOUND = 'COMMENT_001',
+  PARENT_COMMENT_EXCEPTION = 'COMMENT_002',
+}
