@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/geist';
+
+@layer base {
+  body {
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+@theme inline {
+  --color-default-color: #fbfbfc;
+}
