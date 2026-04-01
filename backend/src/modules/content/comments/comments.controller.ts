@@ -34,4 +34,20 @@ export class CommentsController {
       excludeExtraneousValues: true,
     });
   }
+
+  @Get()
+  @UseGuards(OptionalJwtAuthGuard)
+  async getCommentsTreeByPost(
+    @Param('id') postId: string,
+    @GetUserId() userId?: string,
+  ) {
+    const commentsTree = await this.commentsService.getCommentsTreeByPost(
+      postId,
+      userId,
+    );
+
+    return plainToInstance(CommentTreeResponseDto, commentsTree, {
+      excludeExtraneousValues: true,
+    });
+  }
 }

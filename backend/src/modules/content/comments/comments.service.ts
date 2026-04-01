@@ -62,4 +62,46 @@ export class CommentsService {
 
     return newComment;
   }
+
+  async getCommentsTreeByPost(postId: string, currentUserId?: string) {
+    const flatComments = await this.prisma.comment.findMany({
+      where: { post_id: postId },
+      orderBy: { createdAt: 'asc' },
+      include: COMMENT_INCLUDE_USER,
+    });
+
+    const commentMap = new Map<string, CommentTreeNode>();
+    const rootComments: CommentTreeNode[] = [];
+
+    for (const comment of flatComments) {
+      commentMap.set(comment.id, {
+        id: comment.id,
+        content: comment.content,
+        anonymous: comment.anonymous,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        parentCommentId: comment.parent_comment_id,
+        isOwner: comment.user_id === currentUserId,
+        user: comment.user,
+        replies: [],
+      });
+    }
+
+    for (const comment of flatComments) {
+      const mappedComment = commentMap.get(comment.id);
+      if (!mappedComment) continue;
+
+      if (!comment.parent_comment_id) {
+        rootComments.push(mappedComment);
+        continue;
+      }
+
+      const parentComment = commentMap.get(comment.parent_comment_id);
+      if (parentComment) {
+        parentComment.replies.push(mappedComment);
+      }
+    }
+
+    return rootComments;
+  }
 }
