@@ -81,12 +81,15 @@ export class UserController {
 
   @Get()
   @ApiOperation({
-    summary: 'Listar todos os usuários',
+    summary: 'Listar todos os usuários [not implemented]',
     description: 'Retorna todos os usuários cadastrados.',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de usuários retornada com sucesso.',
+    example: {
+      message: '[not implemented]',
+    },
   })
   findAll() {
     return this.userService.findAll();
@@ -195,7 +198,7 @@ export class UserController {
 
   @Delete(':id')
   @ApiOperation({
-    summary: 'Remover usuário',
+    summary: 'Remover usuário [not implemented]',
     description: 'Remove um usuário pelo ID.',
   })
   @ApiParam({
@@ -206,6 +209,9 @@ export class UserController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Usuário removido com sucesso.',
+    example: {
+      message: '[not implemented]',
+    },
   })
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
