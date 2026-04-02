@@ -39,6 +39,7 @@ model User {
   likesComments Likes_Comments[]
 
   refreshTokens RefreshToken[]
+  comments      Comment[]
 }
 
 model UserProvider {
@@ -90,15 +91,23 @@ model Language {
 }
 
 model Comment {
-  id                String   @id @default(uuid())
-  post_id           String
-  parent_comment_id String?
-  createdAt         DateTime @default(now())
-  content           String   @db.VarChar(10000)
+  id        String    @id @default(uuid())
+  content   String    @db.VarChar(10000)
+  anonymous Boolean   @default(false)
+  createdAt DateTime  @default(now()) @db.Timestamp(3)
+  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamp(3)
+  deletedAt DateTime? @db.Timestamp(3)
 
-  post          Post             @relation(fields: [post_id], references: [id])
-  parent        Comment?         @relation("CommentToComment", fields: [parent_comment_id], references: [id])
-  replies       Comment[]        @relation("CommentToComment")
+  user_id String
+  user    User   @relation(fields: [user_id], references: [id])
+
+  post_id String
+  post    Post   @relation(fields: [post_id], references: [id])
+
+  parent_comment_id String?
+  parent            Comment?  @relation("CommentReplies", fields: [parent_comment_id], references: [id])
+  replies           Comment[] @relation("CommentReplies")
+
   likesComments Likes_Comments[]
 }
 
