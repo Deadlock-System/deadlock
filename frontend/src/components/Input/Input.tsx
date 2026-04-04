@@ -7,6 +7,10 @@ type InputProps = {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
+  disabled?: boolean;
+  readOnly?: boolean;
+  onFocus?: () => void;
+  onBlur?: () => void;
 };
 
 export default function Input({
@@ -16,6 +20,10 @@ export default function Input({
   value,
   onChange,
   placeholder,
+  disabled,
+  readOnly,
+  onFocus,
+  onBlur,
 }: InputProps) {
   const inputId = `input-${name}`;
 
@@ -30,8 +38,12 @@ export default function Input({
         name={name}
         value={value}
         onChange={onChange}
+        onFocus={onFocus}
+        onBlur={onBlur}
         placeholder={placeholder}
         className="textInput"
+        disabled={disabled}
+        readOnly={readOnly}
       />
     </div>
   );
