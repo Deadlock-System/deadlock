@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import Input from "../../components/Input/Input";
 import logo from "../../assets/logo-deadlock-sem-fundo.png";
 import "./Login.css";
@@ -27,17 +28,13 @@ function getLoginErrorText(error: unknown, fallback: string) {
 }
 
 export default function Login() {
-  const queryClient = useMemo(() => new QueryClient(), []);
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <LoginContent />
-    </QueryClientProvider>
-  );
+  return <LoginContent />;
 }
 
 function LoginContent() {
   const googleEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [form, setForm] = useState<FormState>({
     email: "",
     password: "",
@@ -67,6 +64,8 @@ function LoginContent() {
       });
 
       setFormMessage({ type: "success", text: "Login realizado com sucesso!" });
+      queryClient.removeQueries({ queryKey: ["me"] });
+      navigate("/profile", { replace: true });
     } catch (error: unknown) {
       setFormMessage({
         type: "error",
@@ -105,7 +104,7 @@ function LoginContent() {
                 type="text"
                 value={form.email}
                 onChange={handleChange}
-                placeholder="USUARIO/EMAIL"
+                placeholder="EMAIL"
               />
 
               <Input
