@@ -3,12 +3,33 @@ import { useMutation } from "@tanstack/react-query";
 import { AppError } from "../utils/AppError";
 
 export type SignInInput = { email: string; password: string };
-export type SignInResponse = { accessToken: string; refreshToken: string };
+export type SignInResponse = void;
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-function getErrorCode(payload: any, status: number) {
-  return typeof payload?.code === "string" ? payload.code : `HTTP_${status}`;
+function resolveApiBaseUrl() {
+  try {
+    const api = new URL(env.apiURL);
+    if (
+      typeof window !== "undefined" &&
+      window.location.hostname === "localhost" &&
+      api.hostname === "localhost" &&
+      api.port === "3000"
+    ) {
+      return `${window.location.origin}/api`;
+    }
+  } catch {
+    return env.apiURL;
+  }
+  return env.apiURL;
+}
+
+function getErrorCode(payload: unknown, status: number) {
+  const code =
+    typeof payload === "object" && payload !== null && "code" in payload
+      ? (payload as { code?: unknown }).code
+      : null;
+  return typeof code === "string" ? code : `HTTP_${status}`;
 }
 
 async function request<T>(params: {
@@ -16,15 +37,25 @@ async function request<T>(params: {
   method?: HttpMethod;
   body?: Record<string, unknown>;
 }): Promise<T> {
+  const baseUrl = resolveApiBaseUrl();
   const method = params.method ?? (params.body === undefined ? "GET" : "POST");
   const hasBody = params.body !== undefined && method !== "GET";
 
-  const response = await fetch(`${env.apiURL}${params.path}`, {
-    method,
-    headers: hasBody ? { "Content-Type": "application/json" } : undefined,
-    body: hasBody ? JSON.stringify(params.body) : undefined,
-    credentials: "include",
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl}${params.path}`, {
+      method,
+      headers: hasBody ? { "Content-Type": "application/json" } : undefined,
+      body: hasBody ? JSON.stringify(params.body) : undefined,
+      credentials: "include",
+    });
+  } catch (error: unknown) {
+    throw new AppError({
+      code: "NETWORK_ERROR",
+      status: 0,
+      details: { message: error instanceof Error ? error.message : String(error) },
+    });
+  }
 
   const payload = await response.json().catch(() => null);
 
@@ -39,24 +70,28 @@ async function request<T>(params: {
   return payload as T;
 }
 
-async function signInRequest(data: SignInInput): Promise<SignInResponse> {
-  return request<SignInResponse>({
-    path: "/signIn",
+async function signInRequest(data: SignInInput): Promise<void> {
+  await request<void>({
+    path: "/auth/signIn",
     method: "POST",
     body: { email: data.email.trim(), password: data.password },
   });
 }
 
 export function useSignIn() {
-  return useMutation<SignInResponse, AppError, SignInInput>({
+  return useMutation<void, AppError, SignInInput>({
     mutationFn: signInRequest,
   });
 }
 
 export function getGithubLoginUrl() {
+  const baseUrl = resolveApiBaseUrl();
+  if (baseUrl.endsWith("/api")) return `${baseUrl}/auth/github`;
   return `${env.apiURL}/auth/github`;
 }
 
 export function getGoogleLoginUrl() {
+  const baseUrl = resolveApiBaseUrl();
+  if (baseUrl.endsWith("/api")) return `${baseUrl}/auth/google`;
   return `${env.apiURL}/auth/google`;
 }
