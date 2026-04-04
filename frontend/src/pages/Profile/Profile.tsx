@@ -1,86 +1,25 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMe } from "../../services/ProfileService";
+import { SENIORITY_LABELS } from "../../types/RegisterType";
 import { getErrorMessage } from "../../utils/ErrorMessage";
+import { resolveAvatarSrc, useAvatarsData } from "../../utils/avatar";
 import logo from "../../assets/logo-deadlock-sem-fundo.png";
 import "./Profile.css";
-
-const avatarModules = import.meta.glob("../../assets/ProfilesPictures/*.png", {
-  eager: true,
-  import: "default",
-}) as Record<string, string>;
-
-type Avatar = { id: string; src: string };
-
-function buildAvatars(): { avatars: Avatar[]; byId: Map<string, string> } {
-  const avatars = Object.entries(avatarModules)
-    .map(([path, src]) => {
-      const match = path.match(/Profile-(\d+)\.png$/);
-      if (!match) return null;
-      return { id: match[1], src } satisfies Avatar;
-    })
-    .filter((v): v is Avatar => v !== null)
-    .sort((a, b) => Number(a.id) - Number(b.id));
-
-  return {
-    avatars,
-    byId: new Map(avatars.map((a) => [a.id, a.src])),
-  };
-}
-
-function isRemoteUrl(value: string) {
-  return /^https?:\/\//i.test(value);
-}
-
-const LOCAL_AVATAR_URL_BASE = "https://deadlock.local/avatar";
-
-function getLocalAvatarIdFromUrl(value: string) {
-  try {
-    const base = new URL(LOCAL_AVATAR_URL_BASE);
-    const url = new URL(value);
-    if (url.origin !== base.origin) return null;
-    if (url.pathname !== base.pathname) return null;
-    return url.searchParams.get("id");
-  } catch {
-    return null;
-  }
-}
-
-function getSeniorityLabel(value: string) {
-  switch (value) {
-    case "STUDENDT":
-      return "Estudante";
-    case "JUNIOR":
-      return "Junior";
-    case "PLENO":
-      return "Pleno";
-    case "SENIOR":
-      return "Senior";
-    case "TECH_LEAD":
-      return "Tech Lead";
-    case "C_LEVEL":
-      return "C-Level";
-    case "NOT_SELECTED":
-      return "Não selecionado";
-    default:
-      return value;
-  }
-}
 
 export default function Profile() {
   const navigate = useNavigate();
   const meQuery = useMe();
-  const avatarsData = useMemo(() => buildAvatars(), []);
+  const avatarsData = useAvatarsData();
 
   const photoSrc = useMemo(() => {
-    const fallback = avatarsData.avatars[0]?.src ?? "";
-    const value = meQuery.data?.userPhoto;
-    if (!value) return fallback;
-    const localId = getLocalAvatarIdFromUrl(value);
-    if (localId) return avatarsData.byId.get(localId) ?? fallback;
-    if (isRemoteUrl(value)) return value;
-    return avatarsData.byId.get(value) ?? fallback;
-  }, [avatarsData, meQuery.data?.userPhoto]);
+    const storedPhotoUrl = meQuery.data?.userPhoto;
+    return resolveAvatarSrc({
+      avatars: avatarsData.avatars,
+      avatarsById: avatarsData.avatarsById,
+      storedPhotoUrl,
+    });
+  }, [avatarsData.avatars, avatarsData.avatarsById, meQuery.data?.userPhoto]);
 
   if (meQuery.isLoading) {
     return (
@@ -124,7 +63,7 @@ export default function Profile() {
                   <div className="profileUserText">
                     <div className="profileUsername">&lt;{me.username} /&gt;</div>
                     <div className="profileSeniority">
-                      Senioridade: {getSeniorityLabel(me.seniorityId)}
+                      Senioridade: {SENIORITY_LABELS[me.seniorityId]}
                     </div>
                   </div>
                 </div>

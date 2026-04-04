@@ -11,48 +11,15 @@ import type { UpdateMeInput } from "../../services/EditProfileService";
 import { SENIORITY_LABELS, SENIORITY_OPTIONS } from "../../types/RegisterType";
 import type { SeniorityId } from "../../types/RegisterType";
 import { getErrorMessage } from "../../utils/ErrorMessage";
+import {
+  buildLocalAvatarUrl,
+  getLocalAvatarIdFromUrl,
+  isRemoteUrl,
+  resolveAvatarSrc,
+  useAvatarsData,
+} from "../../utils/avatar";
 import logo from "../../assets/logo-deadlock-sem-fundo.png";
 import "./EditProfile.css";
-
-const avatarModules = import.meta.glob("../../assets/ProfilesPictures/*.png", {
-  eager: true,
-  import: "default",
-}) as Record<string, string>;
-
-type Avatar = { id: string; src: string };
-
-function buildAvatars(): Avatar[] {
-  return Object.entries(avatarModules)
-    .map(([path, src]) => {
-      const match = path.match(/Profile-(\d+)\.png$/);
-      if (!match) return null;
-      return { id: match[1], src } satisfies Avatar;
-    })
-    .filter((avatarCandidate): avatarCandidate is Avatar => avatarCandidate !== null)
-    .sort((avatarA, avatarB) => Number(avatarA.id) - Number(avatarB.id));
-}
-
-function isRemoteUrl(urlProvided: string) {
-  return /^https?:\/\//i.test(urlProvided);
-}
-
-const LOCAL_AVATAR_URL_BASE = "https://deadlock.local/avatar";
-
-function getLocalAvatarIdFromUrl(photoUrl: string) {
-  try {
-    const base = new URL(LOCAL_AVATAR_URL_BASE);
-    const providedUrl = new URL(photoUrl);
-    if (providedUrl.origin !== base.origin) return null;
-    if (providedUrl.pathname !== base.pathname) return null;
-    return providedUrl.searchParams.get("id");
-  } catch {
-    return null;
-  }
-}
-
-function buildLocalAvatarUrl(id: string) {
-  return `${LOCAL_AVATAR_URL_BASE}?id=${encodeURIComponent(id)}`;
-}
 
 function EditProfileLoadingState() {
   return (
@@ -88,32 +55,30 @@ class EditProfileErrorBoundary extends Component<
   }
 }
 
-function EditProfileQuery({ avatars }: { avatars: Avatar[] }) {
+function EditProfileQuery() {
   const meQuery = useMeSuspense();
-  return <EditProfileContent key={meQuery.data.id} me={meQuery.data} avatars={avatars} />;
+  return <EditProfileContent key={meQuery.data.id} me={meQuery.data} />;
 }
 
 export default function EditProfile() {
-  const avatars = useMemo(() => buildAvatars(), []);
   return (
     <EditProfileErrorBoundary>
       <Suspense fallback={<EditProfileLoadingState />}>
-        <EditProfileQuery avatars={avatars} />
+        <EditProfileQuery />
       </Suspense>
     </EditProfileErrorBoundary>
   );
 }
 
-function EditProfileContent({ me, avatars }: { me: MeResponse; avatars: Avatar[] }) {
+function EditProfileContent({ me }: { me: MeResponse }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const updateMeMutation = useUpdateMe();
   const updatePasswordMutation = useUpdatePassword();
 
-  const avatarsById = useMemo(
-    () => new Map(avatars.map((avatar) => [avatar.id, avatar.src])),
-    [avatars]
-  );
+  const avatarsData = useAvatarsData();
+  const avatars = avatarsData.avatars;
+  const avatarsById = avatarsData.avatarsById;
 
   const canChooseAvatar = true;
 
@@ -151,15 +116,14 @@ function EditProfileContent({ me, avatars }: { me: MeResponse; avatars: Avatar[]
   } | null>(null);
 
   const photoSrc = useMemo(() => {
-    const fallbackAvatarSrc = avatars[0]?.src ?? "";
     const storedPhotoUrl = me.userPhoto;
-    if (avatarId) return avatarsById.get(avatarId) ?? fallbackAvatarSrc;
-    if (!storedPhotoUrl) return fallbackAvatarSrc;
-    const localAvatarId = getLocalAvatarIdFromUrl(storedPhotoUrl);
-    if (localAvatarId) return avatarsById.get(localAvatarId) ?? fallbackAvatarSrc;
-    if (isRemoteUrl(storedPhotoUrl)) return storedPhotoUrl;
-    return avatars.find((a) => a.id === storedPhotoUrl)?.src ?? fallbackAvatarSrc;
-  }, [avatars, avatarId, avatarsById, me.userPhoto]);
+    return resolveAvatarSrc({
+      avatars,
+      avatarsById,
+      storedPhotoUrl,
+      selectedAvatarId: avatarId || undefined,
+    });
+  }, [avatarId, avatars, avatarsById, me.userPhoto]);
 
   const showCurrentPasswordHint =
     (form.password.trim().length > 0 || form.confirmPassword.trim().length > 0) &&
