@@ -52,7 +52,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
               padding: "0 14px",
               borderRadius: 999,
               border: "1px solid rgba(38,63,76,0.35)",
-              background: "#ffffff",
+              background: "#fbfbfc",
               color: "#263f4c",
               fontWeight: 800,
               cursor: "pointer",

@@ -7,6 +7,7 @@
 body {
   margin: 0;
   font-family: Poppins, sans-serif;
+  background: #f3f4f6;
 }
 
 .loginPage {
@@ -14,14 +15,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  background: #f3f4f6;
   padding: 0;
 }
 
 .loginCard {
   width: 100%;
   min-height: 100vh;
-  background: #ffffff;
+  background: #fbfbfc;
   border-radius: 0;
   overflow: hidden;
   display: grid;
@@ -104,7 +105,7 @@ body {
   padding: 0 14px;
   border-radius: 999px;
   border: 1px solid rgba(38, 63, 76, 0.35);
-  background: #ffffff;
+  background: #fbfbfc;
   color: #263f4c;
   font-weight: 700;
   cursor: pointer;
@@ -120,7 +121,7 @@ body {
   padding: 0 14px;
   border-radius: 999px;
   border: 1px solid rgba(38, 63, 76, 0.35);
-  background: #ffffff;
+  background: #fbfbfc;
   color: #263f4c;
   font-weight: 700;
   cursor: pointer;
