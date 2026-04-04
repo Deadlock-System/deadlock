@@ -31,11 +31,11 @@ function getErrorCode(payload: unknown, status: number) {
   return typeof code === "string" ? code : `HTTP_${status}`;
 }
 
-async function request<T>(params: {
+async function request<TResponse, TBody = undefined>(params: {
   path: string;
   method?: HttpMethod;
-  body?: Record<string, unknown>;
-}): Promise<T> {
+  body?: TBody;
+}): Promise<TResponse> {
   const baseUrl = resolveApiBaseUrl();
   const method = params.method ?? (params.body === undefined ? "GET" : "POST");
   const hasBody = params.body !== undefined && method !== "GET";
@@ -66,7 +66,7 @@ async function request<T>(params: {
     });
   }
 
-  return payload as T;
+  return payload as TResponse;
 }
 
 export type UpdateMeInput = {
@@ -75,13 +75,20 @@ export type UpdateMeInput = {
   userPhoto?: string | null;
 };
 
-async function updateMeRequest(data: UpdateMeInput): Promise<MeResponse> {
-  const body: Record<string, unknown> = {};
-  if (data.username !== undefined) body.username = data.username.trim();
-  if (data.seniorityId !== undefined) body.seniorityId = data.seniorityId;
-  if (data.userPhoto !== undefined) body.userPhoto = data.userPhoto;
+type UpdateMeDTO = {
+  username?: string;
+  seniorityId?: SeniorityId | Seniority;
+  userPhoto?: string | null;
+};
 
-  return request<MeResponse>({
+async function updateMeRequest(input: UpdateMeInput): Promise<MeResponse> {
+  const body: UpdateMeDTO = {
+    ...(input.username !== undefined ? { username: input.username.trim() } : {}),
+    ...(input.seniorityId !== undefined ? { seniorityId: input.seniorityId } : {}),
+    ...(input.userPhoto !== undefined ? { userPhoto: input.userPhoto } : {}),
+  };
+
+  return request<MeResponse, UpdateMeDTO>({
     path: "/users/me",
     method: "PATCH",
     body,
@@ -100,14 +107,20 @@ export type UpdatePasswordInput = {
   confirmPassword: string;
 };
 
-async function updatePasswordRequest(data: UpdatePasswordInput): Promise<unknown> {
-  const body: Record<string, unknown> = {
-    currentPassword: data.currentPassword,
-    password: data.password,
-    confirmPassword: data.confirmPassword,
+type UpdatePasswordDTO = {
+  currentPassword: string;
+  password: string;
+  confirmPassword: string;
+};
+
+async function updatePasswordRequest(input: UpdatePasswordInput): Promise<unknown> {
+  const body: UpdatePasswordDTO = {
+    currentPassword: input.currentPassword,
+    password: input.password,
+    confirmPassword: input.confirmPassword,
   };
 
-  return request<unknown>({
+  return request<unknown, UpdatePasswordDTO>({
     path: "/users/me/password",
     method: "PATCH",
     body,
