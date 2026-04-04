@@ -52,7 +52,9 @@ async function bootstrap() {
 
   const configSwagger = new DocumentBuilder()
     .setTitle('Deadlock API')
+    .setDescription('Documentação oficial da API do Deadlock')
     .setVersion('1.0')
+    .addCookieAuth('access_token')
     .build();
 
   const documentFactory = SwaggerModule.createDocument(app, configSwagger);
@@ -61,7 +63,11 @@ async function bootstrap() {
     '/docs',
     apiReference({
       content: documentFactory,
-      theme: 'kepler',
+      theme: 'elysiajs',
+      layout: 'modern',
+      metaData: {
+        title: 'Deadlock API Docs',
+      },
     }),
   );
 
