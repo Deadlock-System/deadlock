@@ -12,7 +12,7 @@ services:
     environment:
       - DOCKER=true
     ports:
-      - "3000:3000"
+      - "${PORT}:${PORT}"
       - "51212:51212"
 
   db:

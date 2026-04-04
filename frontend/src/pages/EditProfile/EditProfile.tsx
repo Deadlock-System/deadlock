@@ -1,13 +1,15 @@
-import { useMemo, useState } from "react";
+import { Component, Suspense, useMemo, useState } from "react";
+import type { FormEvent, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import Input from "../../components/Input/Input";
 import Select from "../../components/Select/Select";
-import { useMe } from "../../services/ProfileService";
+import { useMeSuspense } from "../../services/ProfileService";
 import type { MeResponse } from "../../services/ProfileService";
 import { useUpdateMe, useUpdatePassword } from "../../services/EditProfileService";
 import type { UpdateMeInput } from "../../services/EditProfileService";
-import type { Seniority } from "../../types/RegisterType";
+import { SENIORITY_LABELS, SENIORITY_OPTIONS } from "../../types/RegisterType";
+import type { SeniorityId } from "../../types/RegisterType";
 import { getErrorMessage } from "../../utils/ErrorMessage";
 import logo from "../../assets/logo-deadlock-sem-fundo.png";
 import "./EditProfile.css";
@@ -26,23 +28,23 @@ function buildAvatars(): Avatar[] {
       if (!match) return null;
       return { id: match[1], src } satisfies Avatar;
     })
-    .filter((v): v is Avatar => v !== null)
-    .sort((a, b) => Number(a.id) - Number(b.id));
+    .filter((avatarCandidate): avatarCandidate is Avatar => avatarCandidate !== null)
+    .sort((avatarA, avatarB) => Number(avatarA.id) - Number(avatarB.id));
 }
 
-function isRemoteUrl(value: string) {
-  return /^https?:\/\//i.test(value);
+function isRemoteUrl(urlProvided: string) {
+  return /^https?:\/\//i.test(urlProvided);
 }
 
 const LOCAL_AVATAR_URL_BASE = "https://deadlock.local/avatar";
 
-function getLocalAvatarIdFromUrl(value: string) {
+function getLocalAvatarIdFromUrl(photoUrl: string) {
   try {
     const base = new URL(LOCAL_AVATAR_URL_BASE);
-    const url = new URL(value);
-    if (url.origin !== base.origin) return null;
-    if (url.pathname !== base.pathname) return null;
-    return url.searchParams.get("id");
+    const providedUrl = new URL(photoUrl);
+    if (providedUrl.origin !== base.origin) return null;
+    if (providedUrl.pathname !== base.pathname) return null;
+    return providedUrl.searchParams.get("id");
   } catch {
     return null;
   }
@@ -52,52 +54,54 @@ function buildLocalAvatarUrl(id: string) {
   return `${LOCAL_AVATAR_URL_BASE}?id=${encodeURIComponent(id)}`;
 }
 
-function getSeniorityLabel(value: string) {
-  switch (value) {
-    case "STUDENDT":
-      return "Estudante";
-    case "JUNIOR":
-      return "Junior";
-    case "PLENO":
-      return "Pleno";
-    case "SENIOR":
-      return "Senior";
-    case "TECH_LEAD":
-      return "Tech Lead";
-    case "C_LEVEL":
-      return "C-Level";
-    case "NOT_SELECTED":
-      return "Não selecionado";
-    default:
-      return value;
+function EditProfileLoadingState() {
+  return (
+    <div className="editProfileState">
+      <div className="editProfileStateText">Carregando...</div>
+    </div>
+  );
+}
+
+function EditProfileErrorState({ error }: { error: unknown }) {
+  return (
+    <div className="editProfileState">
+      <div className="editProfileStateText">
+        {getErrorMessage(error, "Erro ao carregar perfil")}
+      </div>
+    </div>
+  );
+}
+
+class EditProfileErrorBoundary extends Component<
+  { children: ReactNode },
+  { error: unknown | null }
+> {
+  state: { error: unknown | null } = { error: null };
+
+  static getDerivedStateFromError(error: unknown) {
+    return { error };
+  }
+
+  render() {
+    if (this.state.error) return <EditProfileErrorState error={this.state.error} />;
+    return this.props.children;
   }
 }
 
+function EditProfileQuery({ avatars }: { avatars: Avatar[] }) {
+  const meQuery = useMeSuspense();
+  return <EditProfileContent key={meQuery.data.id} me={meQuery.data} avatars={avatars} />;
+}
+
 export default function EditProfile() {
-  const meQuery = useMe();
   const avatars = useMemo(() => buildAvatars(), []);
-  if (meQuery.isLoading) {
-    return (
-      <div className="editProfileState">
-        <div className="editProfileStateText">Carregando...</div>
-      </div>
-    );
-  }
-
-  if (meQuery.isError) {
-    return (
-      <div className="editProfileState">
-        <div className="editProfileStateText">
-          {getErrorMessage(meQuery.error, "Erro ao carregar perfil")}
-        </div>
-      </div>
-    );
-  }
-
-  const me = meQuery.data;
-  if (!me) return null;
-
-  return <EditProfileContent key={me.id} me={me} avatars={avatars} />;
+  return (
+    <EditProfileErrorBoundary>
+      <Suspense fallback={<EditProfileLoadingState />}>
+        <EditProfileQuery avatars={avatars} />
+      </Suspense>
+    </EditProfileErrorBoundary>
+  );
 }
 
 function EditProfileContent({ me, avatars }: { me: MeResponse; avatars: Avatar[] }) {
@@ -106,14 +110,17 @@ function EditProfileContent({ me, avatars }: { me: MeResponse; avatars: Avatar[]
   const updateMeMutation = useUpdateMe();
   const updatePasswordMutation = useUpdatePassword();
 
-  const avatarsById = useMemo(() => new Map(avatars.map((a) => [a.id, a.src])), [avatars]);
+  const avatarsById = useMemo(
+    () => new Map(avatars.map((avatar) => [avatar.id, avatar.src])),
+    [avatars]
+  );
 
   const canChooseAvatar = true;
 
   const initialAvatarId = useMemo(() => {
     if (!me.userPhoto) return "";
-    const localId = getLocalAvatarIdFromUrl(me.userPhoto);
-    if (localId && avatarsById.has(localId)) return localId;
+    const localAvatarId = getLocalAvatarIdFromUrl(me.userPhoto);
+    if (localAvatarId && avatarsById.has(localAvatarId)) return localAvatarId;
     if (!isRemoteUrl(me.userPhoto)) {
       return avatarsById.has(me.userPhoto) ? me.userPhoto : "";
     }
@@ -124,14 +131,14 @@ function EditProfileContent({ me, avatars }: { me: MeResponse; avatars: Avatar[]
   const [avatarId, setAvatarId] = useState<string>(initialAvatarId);
   const [form, setForm] = useState<{
     username: string;
-    seniorityId: Seniority | "NOT_SELECTED";
+    seniorityId: SeniorityId;
     currentPassword: string;
     password: string;
     confirmPassword: string;
   }>(
     () => ({
       username: me.username ?? "",
-      seniorityId: (me.seniorityId as Seniority | "NOT_SELECTED") ?? "NOT_SELECTED",
+      seniorityId: me.seniorityId ?? "NOT_SELECTED",
       currentPassword: "",
       password: "",
       confirmPassword: "",
@@ -144,22 +151,22 @@ function EditProfileContent({ me, avatars }: { me: MeResponse; avatars: Avatar[]
   } | null>(null);
 
   const photoSrc = useMemo(() => {
-    const fallback = avatars[0]?.src ?? "";
-    const value = me.userPhoto;
-    if (avatarId) return avatarsById.get(avatarId) ?? fallback;
-    if (!value) return fallback;
-    const localId = getLocalAvatarIdFromUrl(value);
-    if (localId) return avatarsById.get(localId) ?? fallback;
-    if (isRemoteUrl(value)) return value;
-    return avatars.find((a) => a.id === value)?.src ?? fallback;
+    const fallbackAvatarSrc = avatars[0]?.src ?? "";
+    const storedPhotoUrl = me.userPhoto;
+    if (avatarId) return avatarsById.get(avatarId) ?? fallbackAvatarSrc;
+    if (!storedPhotoUrl) return fallbackAvatarSrc;
+    const localAvatarId = getLocalAvatarIdFromUrl(storedPhotoUrl);
+    if (localAvatarId) return avatarsById.get(localAvatarId) ?? fallbackAvatarSrc;
+    if (isRemoteUrl(storedPhotoUrl)) return storedPhotoUrl;
+    return avatars.find((a) => a.id === storedPhotoUrl)?.src ?? fallbackAvatarSrc;
   }, [avatars, avatarId, avatarsById, me.userPhoto]);
 
   const showCurrentPasswordHint =
     (form.password.trim().length > 0 || form.confirmPassword.trim().length > 0) &&
     form.currentPassword.trim().length === 0;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
 
     try {
       setFormMessage(null);
@@ -309,13 +316,13 @@ function EditProfileContent({ me, avatars }: { me: MeResponse; avatars: Avatar[]
 
                   {canChooseAvatar && showAvatarPicker ? (
                     <div className="editProfileAvatarOptions">
-                      {avatars.map((a) => {
-                        const selected = avatarId === a.id;
+                      {avatars.map((avatar) => {
+                        const selected = avatarId === avatar.id;
                         return (
                           <button
-                            key={a.id}
+                            key={avatar.id}
                             type="button"
-                            onClick={() => setAvatarId(a.id)}
+                            onClick={() => setAvatarId(avatar.id)}
                             disabled={isSubmitting}
                             className={
                               selected
@@ -323,7 +330,7 @@ function EditProfileContent({ me, avatars }: { me: MeResponse; avatars: Avatar[]
                                 : "editProfileAvatarOption"
                             }
                           >
-                            <img src={a.src} alt={`Avatar ${a.id}`} />
+                            <img src={avatar.src} alt={`Avatar ${avatar.id}`} />
                           </button>
                         );
                       })}
@@ -335,7 +342,7 @@ function EditProfileContent({ me, avatars }: { me: MeResponse; avatars: Avatar[]
                   <div className="editProfileUserText">
                     <div className="editProfileUsername">&lt;{form.username} /&gt;</div>
                     <div className="editProfileSeniority">
-                      Senioridade: {getSeniorityLabel(form.seniorityId)}
+                      Senioridade: {SENIORITY_LABELS[form.seniorityId]}
                     </div>
                   </div>
 
@@ -420,18 +427,10 @@ function EditProfileContent({ me, avatars }: { me: MeResponse; avatars: Avatar[]
                         onChange={(e) =>
                           setForm((prev) => ({
                             ...prev,
-                            seniorityId: e.target.value as Seniority | "NOT_SELECTED",
+                            seniorityId: e.target.value as SeniorityId,
                           }))
                         }
-                        options={[
-                          { value: "NOT_SELECTED", label: "Não selecionado" },
-                          { value: "STUDENDT", label: "Estudante" },
-                          { value: "JUNIOR", label: "Junior" },
-                          { value: "PLENO", label: "Pleno" },
-                          { value: "SENIOR", label: "Senior" },
-                          { value: "TECH_LEAD", label: "Tech Lead" },
-                          { value: "C_LEVEL", label: "C-Level" },
-                        ]}
+                        options={SENIORITY_OPTIONS}
                       />
 
                       <div className="editProfileActions">

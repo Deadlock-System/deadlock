@@ -1,9 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { env } from "../config/Env";
 import { AppError } from "../utils/AppError";
-import type { Seniority } from "../types/RegisterType";
-
-export type SeniorityId = Seniority | "NOT_SELECTED";
+import type { SeniorityId } from "../types/RegisterType";
 
 export type MeResponse = {
   id: string;
@@ -85,6 +83,19 @@ async function meRequest(): Promise<MeResponse> {
 
 export function useMe() {
   return useQuery<MeResponse, AppError>({
+    queryKey: ["me"],
+    queryFn: meRequest,
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    retry: false,
+    retryOnMount: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useMeSuspense() {
+  return useSuspenseQuery<MeResponse, AppError>({
     queryKey: ["me"],
     queryFn: meRequest,
     staleTime: 60_000,

@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import { env } from "../config/Env";
 import { AppError } from "../utils/AppError";
-import type { Seniority } from "../types/RegisterType";
-import type { MeResponse, SeniorityId } from "./ProfileService";
+import type { Seniority, SeniorityId } from "../types/RegisterType";
+import type { MeResponse } from "./ProfileService";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
