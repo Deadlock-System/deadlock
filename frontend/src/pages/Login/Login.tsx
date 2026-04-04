@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import Input from "../../components/Input/Input";
-import logo from "../../assets/logo-deadlock-sem-fundo.png";
+import logo from "../../assets/logo_deadlock_white.png";
 import "./Login.css";
 import {
   getGithubLoginUrl,

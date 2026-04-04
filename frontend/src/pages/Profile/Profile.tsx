@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMe } from "../../services/ProfileService";
 import { getErrorMessage } from "../../utils/ErrorMessage";
+import logo from "../../assets/logo-deadlock-sem-fundo.png";
 import "./Profile.css";
 
 const avatarModules = import.meta.glob("../../assets/ProfilesPictures/*.png", {
@@ -105,25 +106,7 @@ export default function Profile() {
   return (
     <div className="profilePage">
       <aside className="profileSidebar">
-        <div className="profileSidebarLogo">L</div>
-
-        <div className="profileSidebarButtons">
-          <button type="button" className="profileSidebarButton">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16Z" />
-            </svg>
-          </button>
-        </div>
+        <img src={logo} alt="Deadlock" className="profileSidebarLogo" />
       </aside>
 
       <main className="profileMain">

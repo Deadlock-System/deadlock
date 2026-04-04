@@ -7,7 +7,7 @@ import type { Seniority } from "../../types/RegisterType";
 import Input from "../../components/Input/Input";
 import Select from "../../components/Select/Select";
 
-import logo from "../../assets/logo-deadlock-sem-fundo.png";
+import logo from "../../assets/logo_deadlock_white.png";
 import "./Register.css";
 import { getErrorMessage } from "../../utils/ErrorMessage";
 

@@ -17,27 +17,10 @@
 }
 
 .editProfileSidebarLogo {
-  font-weight: 900;
-  font-size: 18px;
-  line-height: 1;
-}
-
-.editProfileSidebarButtons {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.editProfileSidebarButton {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: #ffffff;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  color: #263f4c;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  margin-top: 6px;
 }
 
 .editProfileMain {
