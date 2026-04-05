@@ -6,7 +6,10 @@ const EnvSchema = z.object({
 });
 
 const parsedEnv = EnvSchema.safeParse(import.meta.env);
-if(!parsedEnv.success) throw new Error(`Variáveis de ambiente inválidas: ${parsedEnv.error.message}`);
+if (!parsedEnv.success)
+  throw new Error(
+    `Variáveis de ambiente inválidas: ${parsedEnv.error.message}`
+  );
 
 export const env = {
   googleClientId: parsedEnv.data.VITE_GOOGLE_CLIENT_ID,
