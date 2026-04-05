@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Register from '../pages/Register/Register';
 import Login from '../pages/Login/Login';
-import { FeedPage } from '../features/feed/pages/FeedPage';
-import { PostView } from '../features/feed/pages/PostView';
+import { FeedPage } from '../pages/FeedPage';
+import { PostView } from '../pages/PostView';
 
 export default function AppRoutes() {
   return (

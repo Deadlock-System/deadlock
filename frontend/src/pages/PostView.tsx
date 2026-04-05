@@ -2,9 +2,9 @@ import { useLocation, useParams } from 'react-router-dom';
 import {
   CommentCard,
   type CommentCardProps,
-} from '../../../components/shared/CommentCard';
-import { Header } from '../../../components/shared/Header';
-import { Sidebar } from '../../../components/shared/Sidebar';
+} from '../components/shared/CommentCard';
+import { Header } from '../components/shared/Header';
+import { Sidebar } from '../components/shared/Sidebar';
 import {
   ArrowBigDown,
   ArrowBigUp,
@@ -13,7 +13,7 @@ import {
   MessageSquareMore,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { postService } from '../../../shared/services/PostService';
+import { postService } from '../shared/services/PostService';
 
 export function PostView() {
   const { id } = useParams();

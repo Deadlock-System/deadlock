@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Header } from '../../../components/shared/Header';
-import {
-  PostCard,
-  type PostCardProps,
-} from '../../../components/shared/PostCard';
-import { Sidebar } from '../../../components/shared/Sidebar';
-import { postService } from '../../../shared/services/PostService';
-import { ButtonPagination } from '../../../components/shared/ButtonPagination';
-import type { PaginationMeta } from '../../../types/PaginationType';
+import { Header } from '../components/shared/Header';
+import { PostCard, type PostCardProps } from '../components/shared/PostCard';
+import { Sidebar } from '../components/shared/Sidebar';
+import { postService } from '../shared/services/PostService';
+import { ButtonPagination } from '../components/shared/ButtonPagination';
+import type { PaginationMeta } from '../types/PaginationType';
 
 export function FeedPage() {
   const [posts, setPosts] = useState<PostCardProps[]>([]);
