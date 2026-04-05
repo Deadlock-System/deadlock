@@ -9,4 +9,18 @@ export const api = {
 
     return await response.json();
   },
+
+  post: async (path: string, data: any) => {
+    console.log('PostData: ', data);
+    const response = await fetch(BASE_URL + path, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    return await response.json();
+  },
 };

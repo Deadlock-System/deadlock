@@ -6,8 +6,10 @@ import {
   MessageSquareMore,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export interface PostCardProps {
+  id: string;
   username: string;
   title: string;
   content: string;
@@ -17,6 +19,7 @@ export interface PostCardProps {
 
 export function PostCard(props: PostCardProps) {
   const [filled, setFilled] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className="w-full rounded-3xl border border-zinc-200 bg-default-color p-6 flex flex-col gap-3">
@@ -25,11 +28,19 @@ export function PostCard(props: PostCardProps) {
         <span className="text-main-color">@{props.username}</span>
       </div>
 
-      <div className="border-t border-zinc-400" />
+      <div className="border-t border-main-color" />
 
-      <span className="text-main-color text-2xl">{props.title}</span>
-
-      <span className="text-main-color">{props.content}</span>
+      <div
+        onClick={() =>
+          navigate(`/postview/${props.id}`, {
+            state: { title: props.title, content: props.content },
+          })
+        }
+        className="flex flex-col gap-2 cursor-pointer"
+      >
+        <span className="text-main-color text-2xl">{props.title}</span>
+        <span className="text-main-color">{props.content}</span>
+      </div>
 
       <div className="border-t border-main-color" />
 
