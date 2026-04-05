@@ -1,10 +1,10 @@
-import { Component, Suspense, useMemo, useState } from "react";
-import type { FormEvent, ReactNode } from "react";
+import { useMemo, useState } from "react";
+import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import Input from "../../components/Input/Input";
 import Select from "../../components/Select/Select";
-import { useMeSuspense } from "../../services/ProfileService";
+import { useMe } from "../../services/ProfileService";
 import type { MeResponse } from "../../services/ProfileService";
 import { useUpdateMe, useUpdatePassword } from "../../services/EditProfileService";
 import type { UpdateMeInput } from "../../services/EditProfileService";
@@ -39,35 +39,17 @@ function EditProfileErrorState({ error }: { error: unknown }) {
   );
 }
 
-class EditProfileErrorBoundary extends Component<
-  { children: ReactNode },
-  { error: unknown | null }
-> {
-  state: { error: unknown | null } = { error: null };
-
-  static getDerivedStateFromError(error: unknown) {
-    return { error };
-  }
-
-  render() {
-    if (this.state.error) return <EditProfileErrorState error={this.state.error} />;
-    return this.props.children;
-  }
-}
-
-function EditProfileQuery() {
-  const meQuery = useMeSuspense();
-  return <EditProfileContent key={meQuery.data.id} me={meQuery.data} />;
-}
-
 export default function EditProfile() {
-  return (
-    <EditProfileErrorBoundary>
-      <Suspense fallback={<EditProfileLoadingState />}>
-        <EditProfileQuery />
-      </Suspense>
-    </EditProfileErrorBoundary>
-  );
+  const meQuery = useMe();
+
+  if (meQuery.isLoading) return <EditProfileLoadingState />;
+
+  if (meQuery.isError) return <EditProfileErrorState error={meQuery.error} />;
+
+  const me = meQuery.data;
+  if (!me) return null;
+
+  return <EditProfileContent key={me.id} me={me} />;
 }
 
 function EditProfileContent({ me }: { me: MeResponse }) {
