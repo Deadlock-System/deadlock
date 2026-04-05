@@ -38,8 +38,10 @@ export function PostCard(props: PostCardProps) {
         }
         className="flex flex-col gap-2 cursor-pointer"
       >
-        <span className="text-main-color text-2xl">{props.title}</span>
-        <span className="text-main-color">{props.content}</span>
+        <span className="text-main-color text-2xl break-words">
+          {props.title}
+        </span>
+        <span className="text-main-color break-words">{props.content}</span>
       </div>
 
       <div className="border-t border-main-color" />
