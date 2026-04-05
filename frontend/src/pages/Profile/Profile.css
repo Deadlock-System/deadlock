@@ -24,6 +24,27 @@
   margin-top: 6px;
 }
 
+.profileSidebarAddPost {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(38, 63, 76, 0.35);
+  background: #fbfbfc;
+  color: #263f4c;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.profileSidebarAddPost:hover {
+  filter: brightness(0.98);
+}
+
+.profileSidebarAddPost:focus-visible {
+  outline: 3px solid rgba(38, 63, 76, 0.35);
+  outline-offset: 3px;
+}
+
 .profileMain {
   min-width: 0;
   display: flex;
@@ -168,6 +189,116 @@
   margin-top: 18px;
   opacity: 0.7;
   font-weight: 700;
+}
+
+.profilePostsList {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profilePostCard {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 14px;
+  background: #fbfbfc;
+  padding: 14px;
+}
+
+.profilePostTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profilePostAuthor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profilePostAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.profilePostHandle {
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.profilePostMenu {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(38, 63, 76, 0.25);
+  background: #fbfbfc;
+  color: #263f4c;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+}
+
+.profilePostBody {
+  margin-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.14);
+  padding-top: 10px;
+}
+
+.profilePostTitle {
+  font-weight: 900;
+  letter-spacing: 0.03em;
+}
+
+.profilePostContent {
+  margin-top: 8px;
+  font-weight: 700;
+  opacity: 0.92;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.profilePostBottom {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.profilePostTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profilePostTag {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(38, 63, 76, 0.3);
+  font-weight: 900;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  text-transform: uppercase;
+}
+
+.profilePostMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0.75;
+  font-weight: 800;
 }
 
 .profileState {

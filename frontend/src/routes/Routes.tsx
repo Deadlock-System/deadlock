@@ -3,6 +3,7 @@ import Register from "../pages/Register/Register";
 import Login from "../pages/Login/Login";
 import Profile from "../pages/Profile/Profile";
 import EditProfile from "../pages/EditProfile/EditProfile";
+import CreatePost from "../pages/CreatePost/CreatePost";
 import RequireAuth from "../components/RequireAuth/RequireAuth";
 
 export default function AppRoutes() {
@@ -25,6 +26,14 @@ export default function AppRoutes() {
           element={
             <RequireAuth>
               <EditProfile />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/post/create"
+          element={
+            <RequireAuth>
+              <CreatePost />
             </RequireAuth>
           }
         />
