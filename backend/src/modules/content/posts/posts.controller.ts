@@ -39,6 +39,11 @@ import { RequestErrorMessages } from 'src/common/exceptions/error-messages/reque
 import { FingerprintInterceptor } from 'src/common/interceptors/fingerprint.interceptor';
 import { GetFingerprint } from 'src/common/decorators/getFingerprint.decorator';
 import { ViewsService } from 'src/modules/engagement/views/views.service';
+import { VoteDto } from 'src/modules/engagement/votes/dto/vote.dto';
+import {
+  VotesService,
+  VoteTarget,
+} from 'src/modules/engagement/votes/votes.service';
 
 @ApiTags('Posts | Postagens')
 @ApiExtraModels(PostResponseDto)
@@ -48,6 +53,7 @@ export class PostsController {
   constructor(
     private readonly postsService: PostsService,
     private readonly viewsService: ViewsService,
+    private readonly votesService: VotesService,
   ) {}
 
   @Post()
@@ -78,6 +84,21 @@ export class PostsController {
     );
 
     return new PostResponseDto(createdPost, userId);
+  }
+
+  @Post(':id/vote')
+  @UseGuards(AuthGuard('jwt'))
+  async voteOnPost(
+    @Param('id') postId: string,
+    @GetUserId() userId: string,
+    @Body() body: VoteDto,
+  ) {
+    return this.votesService.toggleVote(
+      userId,
+      postId,
+      VoteTarget.POST,
+      body.value,
+    );
   }
 
   @Get()
@@ -114,6 +135,7 @@ export class PostsController {
       query.page,
       query.limit,
       query.search,
+      userId,
     );
 
     const postsResponse = PostResponseDto.fromArray(posts, userId);
@@ -153,7 +175,7 @@ export class PostsController {
     @GetUserId() userId: string,
     @GetFingerprint() fingerprint: string,
   ) {
-    const post = await this.postsService.findOneById(postId);
+    const post = await this.postsService.findOneById(postId, userId);
 
     this.viewsService.incrementView(postId, fingerprint).catch((error) => {
       console.error('Error incrementing view:', error);

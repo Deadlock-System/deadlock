@@ -6,6 +6,7 @@ export class PostEntity implements Post {
   anonymous: boolean;
   content: string;
   views: number;
+  scoreVotes: number;
   createdAt: Date;
   updatedAt: Date;
   user_id: string;
