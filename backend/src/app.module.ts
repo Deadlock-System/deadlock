@@ -6,6 +6,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ContentModule } from './modules/content/content.module';
 import { CustomRedisModule } from './redis/redis.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CustomRedisModule } from './redis/redis.module';
         },
       ],
     }),
+    ScheduleModule.forRoot(),
     UserModule,
     AuthModule,
     ContentModule,
