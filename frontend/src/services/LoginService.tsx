@@ -34,6 +34,8 @@ function getErrorCode(payload: unknown, status: number) {
       : null;
 
   return typeof code === "string" ? code : `HTTP_${status}`;
+function getErrorCode(payload: any, status: number) {
+  return typeof payload?.code === 'string' ? payload.code : `HTTP_${status}`;
 }
 
 async function request<T>(params: {
@@ -63,6 +65,15 @@ async function request<T>(params: {
       },
     });
   }
+  const method = params.method ?? (params.body === undefined ? 'GET' : 'POST');
+  const hasBody = params.body !== undefined && method !== 'GET';
+
+  const response = await fetch(`${env.apiURL}${params.path}`, {
+    method,
+    headers: hasBody ? { 'Content-Type': 'application/json' } : undefined,
+    body: hasBody ? JSON.stringify(params.body) : undefined,
+    credentials: 'include',
+  });
 
   const payload = await response.json().catch(() => null);
 
