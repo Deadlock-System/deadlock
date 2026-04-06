@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { getGithubAuthUrl, getGoogleAuthUrl, useCreateUser } from "../../services/RegisterService";
+import { useSignIn } from "../../services/LoginService";
 import type { Seniority } from "../../types/RegisterType";
 import Input from "../../components/Input/Input";
 import Select from "../../components/Select/Select";
 
-import logo from "../../assets/logo-deadlock-sem-fundo.png";
+import logo from "../../assets/logo_deadlock_white.png";
 import "./Register.css";
 import { getErrorMessage } from "../../utils/ErrorMessage";
 
@@ -18,6 +21,8 @@ type FormState = {
 
 export default function Register() {
   const googleEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [showPasswordHint, setShowPasswordHint] = useState(false);
   const [form, setForm] = useState<FormState>({
     username: "",
@@ -34,7 +39,8 @@ export default function Register() {
     text: string;
   } | null>(null);
   const createUserMutation = useCreateUser();
-  const isSubmitting = createUserMutation.isPending;
+  const signInMutation = useSignIn();
+  const isSubmitting = createUserMutation.isPending || signInMutation.isPending;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -134,16 +140,6 @@ export default function Register() {
         confirmPassword: form.confirmPassword,
         seniorityId: form.seniorityId as Seniority,
       });
-
-      setFormMessage({ type: "success", text: "Usuário cadastrado com sucesso!" });
-      setForm({
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        seniorityId: "",
-      });
-      setFieldErrors({});
     } catch (error: unknown) {
       const text = getRegisterErrorText(error, "Erro ao cadastrar usuário");
       setFormMessage({ type: "error", text });
@@ -160,7 +156,24 @@ export default function Register() {
       if (code === "INVALID_PASSWORD") {
         setFieldErrors((prev) => ({ ...prev, confirmPassword: "As senhas não coincidem" }));
       }
+      return;
     }
+
+    try {
+      await signInMutation.mutateAsync({
+        email: form.email.trim(),
+        password: form.password,
+      });
+    } catch (error: unknown) {
+      setFormMessage({
+        type: "error",
+        text: getErrorMessage(error, "Usuário criado, mas não foi possível entrar automaticamente"),
+      });
+      return;
+    }
+
+    queryClient.removeQueries({ queryKey: ["me"] });
+    navigate("/profile", { replace: true });
   };
 
   return (

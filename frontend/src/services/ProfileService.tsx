@@ -1,14 +1,14 @@
-import type { RegisterType } from "../types/RegisterType";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { env } from "../config/Env";
-import { useMutation } from "@tanstack/react-query";
 import { AppError } from "../utils/AppError";
+import type { SeniorityId } from "../types/RegisterType";
 
-export type CreateUserResponse = {
+export type MeResponse = {
   id: string;
   email: string | null;
   username: string;
   userPhoto: string | null;
-  seniorityId: RegisterType["seniorityId"];
+  seniorityId: SeniorityId;
   createdAt: string;
 };
 
@@ -77,34 +77,32 @@ async function request<T>(params: {
   return payload as T;
 }
 
-async function createUserRequest(data: RegisterType): Promise<CreateUserResponse> {
-  return request<CreateUserResponse>({
-    path: "/users",
-    method: "POST",
-    body: {
-      email: data.email.trim(),
-      username: data.username.trim(),
-      password: data.password,
-      confirmPassword: data.confirmPassword,
-      seniorityId: data.seniorityId,
-    },
+async function meRequest(): Promise<MeResponse> {
+  return request<MeResponse>({ path: "/users/me", method: "GET" });
+}
+
+export function useMe() {
+  return useQuery<MeResponse, AppError>({
+    queryKey: ["me"],
+    queryFn: meRequest,
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    retry: false,
+    retryOnMount: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }
 
-export function useCreateUser() {
-  return useMutation<CreateUserResponse, AppError, RegisterType>({
-    mutationFn: createUserRequest,
+export function useMeSuspense() {
+  return useSuspenseQuery<MeResponse, AppError>({
+    queryKey: ["me"],
+    queryFn: meRequest,
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    retry: false,
+    retryOnMount: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
-}
-
-export function getGithubAuthUrl() {
-  const baseUrl = resolveApiBaseUrl();
-  if (baseUrl.endsWith("/api")) return `${baseUrl}/auth/github`;
-  return `${env.apiURL}/auth/github`;
-}
-
-export function getGoogleAuthUrl() {
-  const baseUrl = resolveApiBaseUrl();
-  if (baseUrl.endsWith("/api")) return `${baseUrl}/auth/google`;
-  return `${env.apiURL}/auth/google`;
 }

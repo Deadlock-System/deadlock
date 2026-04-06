@@ -7,6 +7,7 @@
 body {
   margin: 0;
   font-family: Poppins, sans-serif;
+  background: #f3f4f6;
 }
 
 .registerPage {
@@ -14,14 +15,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  background: #f3f4f6;
   padding: 0;
 }
 
 .registerCard {
   width: 100%;
   min-height: 100vh;
-  background: #ffffff;
+  background: #fbfbfc;
   border-radius: 0;
   overflow: hidden;
   display: grid;
@@ -101,7 +102,7 @@ body {
 
 .registerPasswordHint {
   width: min(360px, 100%);
-  background: #ffffff;
+  background: #fbfbfc;
   border: 1px solid rgba(38, 63, 76, 0.25);
   border-radius: 12px;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
@@ -118,7 +119,7 @@ body {
   content: "";
   width: 12px;
   height: 12px;
-  background: #ffffff;
+  background: #fbfbfc;
   border-right: 1px solid rgba(38, 63, 76, 0.25);
   border-bottom: 1px solid rgba(38, 63, 76, 0.25);
   position: absolute;
@@ -175,7 +176,7 @@ body {
   padding: 0 14px;
   border-radius: 999px;
   border: 1px solid rgba(38, 63, 76, 0.35);
-  background: #ffffff;
+  background: #fbfbfc;
   color: #263f4c;
   font-weight: 700;
   cursor: pointer;
@@ -191,7 +192,7 @@ body {
   padding: 0 14px;
   border-radius: 999px;
   border: 1px solid rgba(38, 63, 76, 0.35);
-  background: #ffffff;
+  background: #fbfbfc;
   color: #263f4c;
   font-weight: 700;
   cursor: pointer;
