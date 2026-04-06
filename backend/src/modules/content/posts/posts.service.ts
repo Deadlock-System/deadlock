@@ -39,17 +39,27 @@ export class PostsService {
     return post;
   }
 
-  async findAll(page: number, limit: number) {
+  async findAll(page: number, limit: number, searchKey?: string) {
     const skip = (page - 1) * limit;
+
+    const whereClause: Prisma.PostWhereInput = searchKey
+      ? {
+          OR: [
+            { title: { contains: searchKey, mode: 'insensitive' } },
+            { content: { contains: searchKey, mode: 'insensitive' } },
+          ],
+        }
+      : {};
 
     const [posts, total] = await Promise.all([
       this.prisma.post.findMany({
+        where: whereClause,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: POST_DEFAULT_INCLUDES,
       }),
-      this.prisma.post.count(),
+      this.prisma.post.count({ where: whereClause }),
     ]);
     return { posts, total };
   }

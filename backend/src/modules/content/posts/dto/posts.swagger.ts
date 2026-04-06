@@ -40,6 +40,11 @@ export const GetPostsDocs: Record<keyof GetPostsDto, ApiPropertyOptions> = {
     default: 20,
     required: false,
   },
+  search: {
+    description: 'Palavra-chave de pesquisa por posts',
+    example: 'Prisma',
+    required: false,
+  },
 };
 
 export type PostResponseDtoKeys = Exclude<

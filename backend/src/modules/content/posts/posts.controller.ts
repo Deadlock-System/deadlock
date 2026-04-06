@@ -93,6 +93,12 @@ export class PostsController {
     description: 'Quantidade de posts por página.',
     example: 20,
   })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Palavra-chave de pesquisa por posts',
+    example: 'Prisma',
+  })
   @ApiPaginatedPostResponse(
     HttpStatus.OK,
     'Lista de posts retornada com sucesso.',
@@ -101,6 +107,7 @@ export class PostsController {
     const { posts, total } = await this.postsService.findAll(
       query.page,
       query.limit,
+      query.search,
     );
 
     const postsResponse = PostResponseDto.fromArray(posts, userId);
