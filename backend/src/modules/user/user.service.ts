@@ -56,7 +56,7 @@ export class UserService {
   }
 
   findAll() {
-    return `This action returns all user`;
+    return `This action returns all user [not implemented]`;
   }
 
   async findByUserId(userId: string) {
@@ -138,6 +138,6 @@ export class UserService {
   }
 
   remove(id: number) {
-    return `This action removes a #${id} user`;
+    return `This action removes a #${id} user [not implemented]`;
   }
 }

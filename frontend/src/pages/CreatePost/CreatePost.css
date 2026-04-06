@@ -1,0 +1,562 @@
+.createPostPage {
+  min-height: 100vh;
+  font-family: Poppins, sans-serif;
+  color: #263f4c;
+  background: #f3f4f6;
+  display: grid;
+  grid-template-columns: 72px 1fr;
+}
+
+.createPostSidebar {
+  border-right: 1px solid rgba(0, 0, 0, 0.18);
+  background: #fbfbfc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 10px;
+  gap: 26px;
+}
+
+.createPostSidebarLogo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  margin-top: 6px;
+}
+
+.createPostMain {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.createPostHeader {
+  height: 56px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  background: #fbfbfc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+}
+
+.createPostSearch {
+  width: min(680px, 100%);
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(38, 63, 76, 0.35);
+  background: #fbfbfc;
+  outline: none;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.createPostContentWrap {
+  padding: 24px 26px 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.createPostContent {
+  width: min(1120px, 100%);
+}
+
+.createPostTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.createPostTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.createPostGrid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 22px;
+  align-items: start;
+}
+
+.createPostCard {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 14px;
+  background: #fbfbfc;
+  padding: 22px;
+}
+
+.createPostFieldBox {
+  border: 1px solid rgba(38, 63, 76, 0.5);
+  border-radius: 16px;
+  padding: 16px;
+  background: #fbfbfc;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.createPostInput {
+  width: 100%;
+  height: 42px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(38, 63, 76, 0.55);
+  padding: 0 16px;
+  background: #fbfbfc;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  outline: none;
+}
+
+.createPostTextarea {
+  width: 100%;
+  min-height: 300px;
+  resize: vertical;
+  border-radius: 12px;
+  border: 1.5px solid rgba(38, 63, 76, 0.55);
+  padding: 14px 16px;
+  background: #fbfbfc;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  outline: none;
+}
+
+.createPostPreviewPost {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 14px;
+  background: #fbfbfc;
+  padding: 14px;
+}
+
+.createPostPreviewPostTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.createPostPreviewAuthor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.createPostPreviewAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.createPostPreviewHandle {
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.createPostPreviewPostBody {
+  margin-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.14);
+  padding-top: 10px;
+}
+
+.createPostPreviewPostTitle {
+  font-weight: 900;
+  letter-spacing: 0.03em;
+}
+
+.createPostPreviewPostContent {
+  margin-top: 8px;
+  font-weight: 700;
+  opacity: 0.92;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.createPostPreviewTags {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.createPostPreviewTag {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(38, 63, 76, 0.3);
+  font-weight: 900;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  text-transform: uppercase;
+}
+
+.createPostSnippets {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.createPostSnippet {
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  padding-top: 14px;
+}
+
+.createPostSnippetHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.createPostSnippetSelectRow {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.createPostSnippetLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.createPostSnippetSelect {
+  height: 34px;
+  min-width: 200px;
+  border-radius: 10px;
+  border: 1px solid rgba(38, 63, 76, 0.45);
+  padding: 0 10px;
+  background: #fbfbfc;
+  font-weight: 800;
+  outline: none;
+}
+
+.createPostSnippetRemoveSmall {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(38, 63, 76, 0.45);
+  background: #fbfbfc;
+  color: #263f4c;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.createPostSnippetEditor {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+}
+
+.createPostSnippetButtons {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.createPostSnippetButton {
+  height: 40px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: none;
+  background: #263f4c;
+  color: #ffffff;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.createPostSnippetButtonDanger {
+  background: #1b2f38;
+}
+
+.createPostPanel {
+  position: sticky;
+  top: 78px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.createPostModeSwitch {
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 14px;
+  background: #fbfbfc;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.createPostModeButton {
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(38, 63, 76, 0.35);
+  background: #fbfbfc;
+  color: #263f4c;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.createPostModeButton.active {
+  background: #263f4c;
+  color: #ffffff;
+  border-color: #263f4c;
+}
+
+.createPostPanelCard {
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 14px;
+  background: #fbfbfc;
+  padding: 12px 12px 14px;
+}
+
+.createPostPanelSectionTitle {
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.createPostRadioRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-weight: 900;
+}
+
+.createPostRadioLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+.createPostTagLanguageRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.createPostTagLanguageSelect {
+  height: 34px;
+  flex: 1;
+  min-width: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(38, 63, 76, 0.35);
+  background: #fbfbfc;
+  padding: 0 10px;
+  font-weight: 800;
+  outline: none;
+}
+
+.createPostTagLanguageAdd {
+  height: 34px;
+  width: 34px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(38, 63, 76, 0.35);
+  background: #fbfbfc;
+  color: #263f4c;
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.createPostTagList {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.createPostTagChip {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(38, 63, 76, 0.35);
+  background: #fbfbfc;
+  color: #263f4c;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.createPostSubmit {
+  height: 46px;
+  border-radius: 999px;
+  border: none;
+  background: #263f4c;
+  color: #ffffff;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.createPostSubmit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.createPostSubmitError {
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  background: rgba(220, 38, 38, 0.06);
+  color: #991b1b;
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.createPostPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.createPostPreviewSnippets {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.createPostSnippetPreview {
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fbfbfc;
+}
+
+.createPostSnippetPreviewTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.createPostSnippetMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.createPostSnippetLang {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(38, 63, 76, 0.35);
+  font-weight: 900;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  text-transform: uppercase;
+}
+
+.createPostSnippetActions {
+  display: flex;
+  gap: 8px;
+}
+
+.createPostSnippetIcon {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(38, 63, 76, 0.35);
+  background: #fbfbfc;
+  color: #263f4c;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.createPostSnippetEditorFrame {
+  width: 100%;
+}
+
+.createPostFullscreenOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: grid;
+  place-items: center;
+  z-index: 50;
+  padding: 18px;
+}
+
+.createPostFullscreenCard {
+  width: min(1080px, 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fbfbfc;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.createPostFullscreenTop {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.createPostFullscreenTitle {
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.createPostFullscreenTopActions {
+  display: flex;
+  gap: 10px;
+}
+
+.createPostFullscreenButton {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(38, 63, 76, 0.35);
+  background: #fbfbfc;
+  color: #263f4c;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+@media (max-width: 980px) {
+  .createPostGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .createPostPanel {
+    position: static;
+  }
+}

@@ -13,6 +13,7 @@ import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -27,7 +28,8 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: '*',
+    origin: 'http://localhost:5173',
+    credentials: true,
   });
 
   app.useGlobalPipes(
@@ -50,7 +52,9 @@ async function bootstrap() {
 
   const configSwagger = new DocumentBuilder()
     .setTitle('Deadlock API')
+    .setDescription('Documentação oficial da API do Deadlock')
     .setVersion('1.0')
+    .addCookieAuth('access_token')
     .build();
 
   const documentFactory = SwaggerModule.createDocument(app, configSwagger);
@@ -59,7 +63,11 @@ async function bootstrap() {
     '/docs',
     apiReference({
       content: documentFactory,
-      theme: 'kepler',
+      theme: 'elysiajs',
+      layout: 'modern',
+      metaData: {
+        title: 'Deadlock API Docs',
+      },
     }),
   );
 
