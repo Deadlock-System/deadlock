@@ -24,7 +24,6 @@ function resolveApiBaseUrl() {
   return env.apiURL;
 }
 
-// ✅ CORRIGIDO
 function getErrorCode(payload: unknown, status: number) {
   const code =
     typeof payload === "object" &&
