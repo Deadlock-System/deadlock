@@ -59,7 +59,10 @@ export class CommentsService {
         post_id: postId,
         parent_comment_id: dto.parentCommentId || null,
       },
-      include: COMMENT_INCLUDE_USER,
+      include: {
+        ...COMMENT_INCLUDE_USER,
+        votes: currentUserId ? { where: { userId: currentUserId } } : false,
+      },
     });
 
     return newComment;
@@ -69,7 +72,10 @@ export class CommentsService {
     const flatComments = await this.prisma.comment.findMany({
       where: { post_id: postId },
       orderBy: { createdAt: 'asc' },
-      include: COMMENT_INCLUDE_USER,
+      include: {
+        ...COMMENT_INCLUDE_USER,
+        votes: currentUserId ? { where: { userId: currentUserId } } : false,
+      },
     });
 
     const commentMap = new Map<string, CommentTreeNode>();
@@ -87,6 +93,8 @@ export class CommentsService {
         isOwner: comment.user_id === currentUserId,
         user: comment.user,
         replies: [],
+        scoreVotes: comment.scoreVotes,
+        votes: comment.votes,
       });
     }
 

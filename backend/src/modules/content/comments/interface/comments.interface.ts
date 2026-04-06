@@ -11,6 +11,8 @@ export type CommentTreeNode = {
   isOwner: boolean;
   user: UserInclude | null;
   replies: CommentTreeNode[];
+  scoreVotes: number;
+  votes: VotesInclude[];
 };
 
 type UserInclude = {
@@ -18,4 +20,11 @@ type UserInclude = {
   user_name: string;
   user_photo: string | null;
   seniority_id: Seniority;
+};
+
+type VotesInclude = {
+  id: string;
+  userId: string;
+  value: number;
+  commentId: string;
 };

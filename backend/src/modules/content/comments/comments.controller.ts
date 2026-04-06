@@ -29,12 +29,20 @@ import { CommentErrorMessages } from 'src/common/exceptions/error-messages/comme
 import { PostErrorCode } from 'src/common/exceptions/error-codes/post-error.codes';
 import { PostErrorMessage } from 'src/common/exceptions/error-messages/post-error-messages';
 import { ApiCommentResponse } from 'src/common/decorators/swagger/api-comment-response.decorator';
+import {
+  VotesService,
+  VoteTarget,
+} from 'src/modules/engagement/votes/votes.service';
+import { VoteDto } from 'src/modules/engagement/votes/dto/vote.dto';
 
 @ApiTags('Comments | Comentários')
 @ApiExtraModels(CommentTreeResponseDto)
 @Controller('posts/:id/comments')
 export class CommentsController {
-  constructor(private readonly commentsService: CommentsService) {}
+  constructor(
+    private readonly commentsService: CommentsService,
+    private readonly votesService: VotesService,
+  ) {}
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
@@ -92,6 +100,21 @@ export class CommentsController {
     return plainToInstance(CommentTreeResponseDto, commentToResponse, {
       excludeExtraneousValues: true,
     });
+  }
+
+  @Post(':commentId/vote')
+  @UseGuards(AuthGuard('jwt'))
+  async voteOnComment(
+    @Param('commentId') commentId: string,
+    @GetUserId() userId: string,
+    @Body() body: VoteDto,
+  ) {
+    return this.votesService.toggleVote(
+      userId,
+      commentId,
+      VoteTarget.COMMENT,
+      body.value,
+    );
   }
 
   @Get()
