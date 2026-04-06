@@ -1,14 +1,14 @@
-import { env } from "../config/Env";
-import { useMutation } from "@tanstack/react-query";
-import { AppError } from "../utils/AppError";
+import { env } from '../config/Env';
+import { useMutation } from '@tanstack/react-query';
+import { AppError } from '../utils/AppError';
 
 export type SignInInput = { email: string; password: string };
 export type SignInResponse = { accessToken: string; refreshToken: string };
 
-type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 function getErrorCode(payload: any, status: number) {
-  return typeof payload?.code === "string" ? payload.code : `HTTP_${status}`;
+  return typeof payload?.code === 'string' ? payload.code : `HTTP_${status}`;
 }
 
 async function request<T>(params: {
@@ -16,14 +16,14 @@ async function request<T>(params: {
   method?: HttpMethod;
   body?: Record<string, unknown>;
 }): Promise<T> {
-  const method = params.method ?? (params.body === undefined ? "GET" : "POST");
-  const hasBody = params.body !== undefined && method !== "GET";
+  const method = params.method ?? (params.body === undefined ? 'GET' : 'POST');
+  const hasBody = params.body !== undefined && method !== 'GET';
 
   const response = await fetch(`${env.apiURL}${params.path}`, {
     method,
-    headers: hasBody ? { "Content-Type": "application/json" } : undefined,
+    headers: hasBody ? { 'Content-Type': 'application/json' } : undefined,
     body: hasBody ? JSON.stringify(params.body) : undefined,
-    credentials: "include",
+    credentials: 'include',
   });
 
   const payload = await response.json().catch(() => null);
@@ -41,8 +41,8 @@ async function request<T>(params: {
 
 async function signInRequest(data: SignInInput): Promise<SignInResponse> {
   return request<SignInResponse>({
-    path: "/signIn",
-    method: "POST",
+    path: '/auth/signIn',
+    method: 'POST',
     body: { email: data.email.trim(), password: data.password },
   });
 }

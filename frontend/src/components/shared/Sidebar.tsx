@@ -1,12 +1,15 @@
-import { Bookmark } from 'lucide-react';
+import { Bookmark, Plus } from 'lucide-react';
 
 export function Sidebar() {
   return (
     <>
       <aside className="hidden md:flex fixed left-0 top-20 h-full w-20 flex-col items-center z-20 border-r border-r-gray-200 bg-default-color">
-        <div className="mt-32">
+        <div className="mt-32 space-y-10">
           <button className="w-12 h-12 flex items-center justify-center rounded-lg hover:bg-zinc-200 transition-colors">
             <Bookmark size={30} strokeWidth={2} className="text-zinc-600" />
+          </button>
+          <button className="w-12 h-12 flex items-center justify-center rounded-lg hover:bg-zinc-200 transition-colors">
+            <Plus size={30} strokeWidth={2} className="text-zinc-600" />
           </button>
         </div>
 
