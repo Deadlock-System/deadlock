@@ -82,6 +82,7 @@ describe('CommentsService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
+        scoreVotes: 0,
         user: userSelectFields,
       };
 
@@ -107,7 +108,10 @@ describe('CommentsService', () => {
           post_id: postId,
           parent_comment_id: null,
         },
-        include: commentIncludeUser,
+        include: {
+          ...commentIncludeUser,
+          votes: { where: { userId } },
+        },
       });
     });
 
@@ -127,6 +131,7 @@ describe('CommentsService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
+        scoreVotes: 0,
         user: userSelectFields,
       };
 
@@ -166,6 +171,7 @@ describe('CommentsService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
+        scoreVotes: 0,
         user: userSelectFields,
       };
 
@@ -192,7 +198,10 @@ describe('CommentsService', () => {
           post_id: postId,
           parent_comment_id: parentCommentId,
         },
-        include: commentIncludeUser,
+        include: {
+          ...commentIncludeUser,
+          votes: { where: { userId } },
+        },
       });
     });
 
@@ -289,7 +298,10 @@ describe('CommentsService', () => {
       expect(prisma.comment.findMany).toHaveBeenCalledWith({
         where: { post_id: postId },
         orderBy: { createdAt: 'asc' },
-        include: commentIncludeUser,
+        include: {
+          ...commentIncludeUser,
+          votes: { where: { userId: currentUserId } },
+        },
       });
     });
 
@@ -305,6 +317,7 @@ describe('CommentsService', () => {
           createdAt: baseMockDate,
           updatedAt: baseMockDate,
           deletedAt: null,
+          scoreVotes: 0,
           user: userSelectFields,
         },
         {
@@ -317,6 +330,7 @@ describe('CommentsService', () => {
           createdAt: baseMockDate,
           updatedAt: baseMockDate,
           deletedAt: null,
+          scoreVotes: 0,
           user: userSelectFields,
         },
       ];
@@ -352,6 +366,7 @@ describe('CommentsService', () => {
           createdAt: baseMockDate,
           updatedAt: baseMockDate,
           deletedAt: null,
+          scoreVotes: 0,
           user: userSelectFields,
         },
         {
@@ -364,6 +379,7 @@ describe('CommentsService', () => {
           createdAt: new Date('2026-01-01T01:00:00Z'),
           updatedAt: new Date('2026-01-01T01:00:00Z'),
           deletedAt: null,
+          scoreVotes: 0,
           user: userSelectFields,
         },
         {
@@ -376,6 +392,7 @@ describe('CommentsService', () => {
           createdAt: new Date('2026-01-01T02:00:00Z'),
           updatedAt: new Date('2026-01-01T02:00:00Z'),
           deletedAt: null,
+          scoreVotes: 0,
           user: userSelectFields,
         },
       ];
@@ -403,6 +420,7 @@ describe('CommentsService', () => {
           createdAt: baseMockDate,
           updatedAt: baseMockDate,
           deletedAt: null,
+          scoreVotes: 0,
           user: userSelectFields,
         },
         {
@@ -415,6 +433,7 @@ describe('CommentsService', () => {
           createdAt: new Date('2026-01-01T01:00:00Z'),
           updatedAt: new Date('2026-01-01T01:00:00Z'),
           deletedAt: null,
+          scoreVotes: 0,
           user: userSelectFields,
         },
         {
@@ -427,6 +446,7 @@ describe('CommentsService', () => {
           createdAt: new Date('2026-01-01T02:00:00Z'),
           updatedAt: new Date('2026-01-01T02:00:00Z'),
           deletedAt: null,
+          scoreVotes: 0,
           user: userSelectFields,
         },
       ];
@@ -455,6 +475,7 @@ describe('CommentsService', () => {
           createdAt: baseMockDate,
           updatedAt: baseMockDate,
           deletedAt: null,
+          scoreVotes: 0,
           user: userSelectFields,
         },
         {
@@ -467,6 +488,7 @@ describe('CommentsService', () => {
           createdAt: baseMockDate,
           updatedAt: baseMockDate,
           deletedAt: null,
+          scoreVotes: 0,
           user: userSelectFields,
         },
       ];
@@ -491,6 +513,7 @@ describe('CommentsService', () => {
           createdAt: baseMockDate,
           updatedAt: baseMockDate,
           deletedAt: null,
+          scoreVotes: 0,
           user: userSelectFields,
         },
       ];
@@ -515,6 +538,7 @@ describe('CommentsService', () => {
           createdAt: baseMockDate,
           updatedAt: baseMockDate,
           deletedAt: deletedDate,
+          scoreVotes: 0,
           user: userSelectFields,
         },
       ];
@@ -541,6 +565,7 @@ describe('CommentsService', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
       deletedAt: null,
+      scoreVotes: 0,
     };
 
     it('should soft-delete a comment successfully', async () => {
