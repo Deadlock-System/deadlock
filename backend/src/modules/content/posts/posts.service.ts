@@ -39,17 +39,27 @@ export class PostsService {
     return post;
   }
 
-  async findAll(page: number, limit: number) {
+  async findAll(page: number, limit: number, searchKey?: string) {
     const skip = (page - 1) * limit;
+
+    const whereClause: Prisma.PostWhereInput = searchKey
+      ? {
+          OR: [
+            { title: { contains: searchKey, mode: 'insensitive' } },
+            { content: { contains: searchKey, mode: 'insensitive' } },
+          ],
+        }
+      : {};
 
     const [posts, total] = await Promise.all([
       this.prisma.post.findMany({
+        where: whereClause,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: POST_DEFAULT_INCLUDES,
       }),
-      this.prisma.post.count(),
+      this.prisma.post.count({ where: whereClause }),
     ]);
     return { posts, total };
   }
@@ -63,6 +73,16 @@ export class PostsService {
     if (!existingPost) throw new PostNotFoundException();
 
     return existingPost;
+  }
+
+  async findByUserId(userId: string) {
+    return this.prisma.post.findMany({
+      where: {
+        user_id: userId,
+      },
+      orderBy: { createdAt: 'desc' },
+      include: POST_DEFAULT_INCLUDES,
+    });
   }
 
   async updatePost(

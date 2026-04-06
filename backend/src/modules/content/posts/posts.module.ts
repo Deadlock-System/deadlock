@@ -8,5 +8,6 @@ import { EngagementModule } from 'src/modules/engagement/engagement.module';
   imports: [PrismaModule, EngagementModule],
   controllers: [PostsController],
   providers: [PostsService],
+  exports: [PostsService],
 })
 export class PostsModule {}
