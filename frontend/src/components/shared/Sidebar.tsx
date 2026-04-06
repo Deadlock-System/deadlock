@@ -3,8 +3,13 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMe } from '../../services/ProfileService';
 import { resolveAvatarSrc, useAvatarsData } from '../../utils/avatar';
+import { env } from '../../config/Env';
 
-export function Sidebar({ showProfileShortcut = true }: { showProfileShortcut?: boolean }) {
+export function Sidebar({
+  showProfileShortcut = true,
+}: {
+  showProfileShortcut?: boolean;
+}) {
   const navigate = useNavigate();
   const meQuery = useMe();
   const avatarsData = useAvatarsData();
@@ -22,13 +27,15 @@ export function Sidebar({ showProfileShortcut = true }: { showProfileShortcut?: 
     <>
       <aside className="hidden md:flex fixed left-0 top-20 h-full w-20 flex-col items-center z-20 border-r border-r-gray-200 bg-default-color">
         <div className="mt-32 space-y-10">
-          <button
-            type="button"
-            className="w-12 h-12 flex items-center justify-center rounded-lg hover:bg-zinc-200 transition-colors"
-            aria-label="Itens salvos"
-          >
-            <Bookmark size={30} strokeWidth={2} className="text-zinc-600" />
-          </button>
+          {env.showBookmark && (
+            <button
+              type="button"
+              className="w-12 h-12 flex items-center justify-center rounded-lg hover:bg-zinc-200 transition-colors"
+              aria-label="Itens salvos"
+            >
+              <Bookmark size={30} strokeWidth={2} className="text-zinc-600" />
+            </button>
+          )}
           <button
             type="button"
             className="w-12 h-12 flex items-center justify-center rounded-lg hover:bg-zinc-200 transition-colors"
@@ -49,7 +56,11 @@ export function Sidebar({ showProfileShortcut = true }: { showProfileShortcut?: 
               aria-label="Perfil"
             >
               {avatarSrc ? (
-                <img src={avatarSrc} alt="Foto de perfil" className="w-full h-full object-cover" />
+                <img
+                  src={avatarSrc}
+                  alt="Foto de perfil"
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <div className="w-full h-full bg-linear-to-br from-zinc-600 to-zinc-900" />
               )}

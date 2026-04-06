@@ -49,27 +49,34 @@ export function FeedPage() {
               {posts
                 .filter((post: any) => post?.content !== '[[DELETED]]')
                 .map((post: any) => {
-                const storedPhotoUrl = post.anonymous
-                  ? null
-                  : (post.user?.user_photo ?? post.user?.userPhoto ?? null);
-                const avatarSrc = resolveAvatarSrc({
-                  avatars: avatarsData.avatars,
-                  avatarsById: avatarsData.avatarsById,
-                  storedPhotoUrl,
-                });
+                  const storedPhotoUrl = post.anonymous
+                    ? null
+                    : (post.user?.user_photo ?? post.user?.userPhoto ?? null);
+                  const avatarSrc = resolveAvatarSrc({
+                    avatars: avatarsData.avatars,
+                    avatarsById: avatarsData.avatarsById,
+                    storedPhotoUrl,
+                  });
 
-                return (
-                  <PostCard
-                    key={post.id}
-                    id={post.id}
-                    username={post.anonymous ? 'anonimo' : post.user?.user_name ?? 'usuario'}
-                    title={post.title}
-                    content={post.content}
-                    avatarSrc={avatarSrc}
-                    languages={Array.isArray(post.languages) ? post.languages : []}
-                  />
-                );
-              })}
+                  return (
+                    <PostCard
+                      key={post.id}
+                      id={post.id}
+                      username={
+                        post.anonymous
+                          ? 'anonimo'
+                          : (post.user?.user_name ?? 'usuario')
+                      }
+                      title={post.title}
+                      content={post.content}
+                      avatarSrc={avatarSrc}
+                      languages={
+                        Array.isArray(post.languages) ? post.languages : []
+                      }
+                      createdAt={post.createdAt}
+                    />
+                  );
+                })}
             </div>
             {meta && meta.totalPages > 1 && (
               <ButtonPagination
