@@ -351,6 +351,7 @@ describe('PostsService', () => {
 
       expect(result).toEqual({ posts: mockPosts, total: 2 });
       expect(prisma.post.findMany).toHaveBeenCalledWith({
+        where: {},
         skip: 0,
         take: limit,
         orderBy: { createdAt: 'desc' },
@@ -366,7 +367,7 @@ describe('PostsService', () => {
           },
         },
       });
-      expect(prisma.post.count).toHaveBeenCalled();
+      expect(prisma.post.count).toHaveBeenCalledWith({ where: {} });
     });
 
     it('should calculate skip correctly for page 2', async () => {
@@ -381,6 +382,7 @@ describe('PostsService', () => {
       expect(result).toEqual({ posts: [], total: 15 });
       expect(prisma.post.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
+          where: {},
           skip: 10,
           take: limit,
         }),
@@ -399,6 +401,7 @@ describe('PostsService', () => {
       expect(result).toEqual({ posts: [], total: 20 });
       expect(prisma.post.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
+          where: {},
           skip: 10,
           take: limit,
         }),
@@ -419,6 +422,189 @@ describe('PostsService', () => {
       prisma.post.count.mockResolvedValue(2);
 
       await service.findAll(1, 10);
+
+      expect(prisma.post.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderBy: { createdAt: 'desc' },
+        }),
+      );
+    });
+
+    it('should pass empty where clause when no searchKey is provided', async () => {
+      prisma.post.findMany.mockResolvedValue(mockPosts);
+      prisma.post.count.mockResolvedValue(2);
+
+      await service.findAll(1, 10);
+
+      expect(prisma.post.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {},
+        }),
+      );
+      expect(prisma.post.count).toHaveBeenCalledWith({ where: {} });
+    });
+
+    it('should filter posts by title or content when searchKey is provided', async () => {
+      const searchKey = 'First';
+      const filteredPosts = [mockPosts[0]];
+
+      prisma.post.findMany.mockResolvedValue(filteredPosts);
+      prisma.post.count.mockResolvedValue(1);
+
+      const result = await service.findAll(1, 10, searchKey);
+
+      const expectedWhere = {
+        OR: [
+          { title: { contains: searchKey, mode: 'insensitive' } },
+          { content: { contains: searchKey, mode: 'insensitive' } },
+        ],
+      };
+
+      expect(result).toEqual({ posts: filteredPosts, total: 1 });
+      expect(prisma.post.findMany).toHaveBeenCalledWith({
+        where: expectedWhere,
+        skip: 0,
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          languages: true,
+          user: {
+            select: {
+              id: true,
+              user_name: true,
+              user_photo: true,
+              seniority_id: true,
+            },
+          },
+        },
+      });
+      expect(prisma.post.count).toHaveBeenCalledWith({
+        where: expectedWhere,
+      });
+    });
+
+    it('should return empty results when searchKey matches no posts', async () => {
+      const searchKey = 'nonexistent';
+
+      prisma.post.findMany.mockResolvedValue([]);
+      prisma.post.count.mockResolvedValue(0);
+
+      const result = await service.findAll(1, 10, searchKey);
+
+      const expectedWhere = {
+        OR: [
+          { title: { contains: searchKey, mode: 'insensitive' } },
+          { content: { contains: searchKey, mode: 'insensitive' } },
+        ],
+      };
+
+      expect(result).toEqual({ posts: [], total: 0 });
+      expect(prisma.post.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expectedWhere,
+        }),
+      );
+      expect(prisma.post.count).toHaveBeenCalledWith({
+        where: expectedWhere,
+      });
+    });
+
+    it('should apply searchKey with correct pagination', async () => {
+      const searchKey = 'Post';
+
+      prisma.post.findMany.mockResolvedValue([]);
+      prisma.post.count.mockResolvedValue(15);
+
+      const result = await service.findAll(2, 5, searchKey);
+
+      const expectedWhere = {
+        OR: [
+          { title: { contains: searchKey, mode: 'insensitive' } },
+          { content: { contains: searchKey, mode: 'insensitive' } },
+        ],
+      };
+
+      expect(result).toEqual({ posts: [], total: 15 });
+      expect(prisma.post.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expectedWhere,
+          skip: 5,
+          take: 5,
+        }),
+      );
+    });
+  });
+
+  describe('findByUserId', () => {
+    const userId = 'user-id-mock';
+
+    const mockUserPosts = [
+      {
+        id: 'post-1',
+        title: 'First Post',
+        content: 'Content 1',
+        anonymous: false,
+        user_id: userId,
+        views: 0,
+        languages: [{ slug: 'typescript', name: 'TypeScript' }],
+        user: userSelectFields,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'post-2',
+        title: 'Second Post',
+        content: 'Content 2',
+        anonymous: true,
+        user_id: userId,
+        views: 0,
+        languages: [],
+        user: userSelectFields,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
+    it('should return all posts from a given user', async () => {
+      prisma.post.findMany.mockResolvedValue(mockUserPosts);
+
+      const result = await service.findByUserId(userId);
+
+      expect(result).toEqual(mockUserPosts);
+      expect(prisma.post.findMany).toHaveBeenCalledWith({
+        where: { user_id: userId },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          languages: true,
+          user: {
+            select: {
+              id: true,
+              user_name: true,
+              user_photo: true,
+              seniority_id: true,
+            },
+          },
+        },
+      });
+    });
+
+    it('should return an empty array when user has no posts', async () => {
+      prisma.post.findMany.mockResolvedValue([]);
+
+      const result = await service.findByUserId(userId);
+
+      expect(result).toEqual([]);
+      expect(prisma.post.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { user_id: userId },
+        }),
+      );
+    });
+
+    it('should order posts by createdAt descending', async () => {
+      prisma.post.findMany.mockResolvedValue(mockUserPosts);
+
+      await service.findByUserId(userId);
 
       expect(prisma.post.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
