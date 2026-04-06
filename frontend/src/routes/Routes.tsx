@@ -4,6 +4,8 @@ import Login from "../pages/Login/Login";
 import Profile from "../pages/Profile/Profile";
 import EditProfile from "../pages/EditProfile/EditProfile";
 import RequireAuth from "../components/RequireAuth/RequireAuth";
+import { FeedPage } from '../pages/FeedPage';
+import { PostView } from '../pages/PostView';
 
 export default function AppRoutes() {
   return (
@@ -29,6 +31,8 @@ export default function AppRoutes() {
           }
         />
         <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/feed" element={<FeedPage />} />
+        <Route path="/postview/:id" element={<PostView />} />
       </Routes>
     </BrowserRouter>
   );
