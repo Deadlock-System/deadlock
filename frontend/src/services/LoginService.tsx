@@ -1,11 +1,11 @@
-import { env } from "../config/Env";
-import { useMutation } from "@tanstack/react-query";
-import { AppError } from "../utils/AppError";
+import { env } from '../config/Env';
+import { useMutation } from '@tanstack/react-query';
+import { AppError } from '../utils/AppError';
 
 export type SignInInput = { email: string; password: string };
 export type SignInResponse = void;
 
-type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 function resolveApiBaseUrl() {
   try {
@@ -24,11 +24,15 @@ function resolveApiBaseUrl() {
   return env.apiURL;
 }
 
+// ✅ CORRIGIDO
 function getErrorCode(payload: unknown, status: number) {
   const code =
-    typeof payload === "object" && payload !== null && "code" in payload
+    typeof payload === "object" &&
+    payload !== null &&
+    "code" in payload
       ? (payload as { code?: unknown }).code
       : null;
+
   return typeof code === "string" ? code : `HTTP_${status}`;
 }
 
@@ -42,6 +46,7 @@ async function request<T>(params: {
   const hasBody = params.body !== undefined && method !== "GET";
 
   let response: Response;
+
   try {
     response = await fetch(`${baseUrl}${params.path}`, {
       method,
@@ -53,7 +58,9 @@ async function request<T>(params: {
     throw new AppError({
       code: "NETWORK_ERROR",
       status: 0,
-      details: { message: error instanceof Error ? error.message : String(error) },
+      details: {
+        message: error instanceof Error ? error.message : String(error),
+      },
     });
   }
 
@@ -70,11 +77,14 @@ async function request<T>(params: {
   return payload as T;
 }
 
-async function signInRequest(data: SignInInput): Promise<void> {
-  await request<void>({
-    path: "/auth/signIn",
-    method: "POST",
-    body: { email: data.email.trim(), password: data.password },
+async function signInRequest(data: SignInInput): Promise<SignInResponse> {
+  return request<SignInResponse>({
+    path: '/auth/signIn',
+    method: 'POST',
+    body: {
+      email: data.email.trim(),
+      password: data.password,
+    },
   });
 }
 
