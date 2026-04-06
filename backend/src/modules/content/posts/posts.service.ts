@@ -75,6 +75,16 @@ export class PostsService {
     return existingPost;
   }
 
+  async findByUserId(userId: string) {
+    return this.prisma.post.findMany({
+      where: {
+        user_id: userId,
+      },
+      orderBy: { createdAt: 'desc' },
+      include: POST_DEFAULT_INCLUDES,
+    });
+  }
+
   async updatePost(
     postId: string,
     updatePostDto: UpdatePostDto,
