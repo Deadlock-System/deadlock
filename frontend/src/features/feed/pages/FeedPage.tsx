@@ -5,7 +5,7 @@ import { Sidebar } from '../../../components/shared/Sidebar';
 export function FeedPage() {
   return (
     <>
-      <div className="min-h-screen bg-amber-700 flex flex-col">
+      <div className="min-h-screen flex flex-col">
         <Header />
         <div className="flex flex-1">
           <Sidebar />
