@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import Input from "../../components/Input/Input";
 import Select from "../../components/Select/Select";
+import { Header } from "../../components/shared/Header";
+import { Sidebar } from "../../components/shared/Sidebar";
 import { useMe } from "../../services/ProfileService";
 import type { MeResponse } from "../../services/ProfileService";
 import { useUpdateMe, useUpdatePassword } from "../../services/EditProfileService";
@@ -18,22 +20,37 @@ import {
   resolveAvatarSrc,
   useAvatarsData,
 } from "../../utils/avatar";
-import logo from "../../assets/logo-deadlock-sem-fundo.png";
 import "./EditProfile.css";
 
 function EditProfileLoadingState() {
   return (
-    <div className="editProfileState">
-      <div className="editProfileStateText">Carregando...</div>
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      <Header />
+      <div className="flex flex-1">
+        <Sidebar />
+        <main className="flex-1">
+          <div className="editProfileState">
+            <div className="editProfileStateText">Carregando...</div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
 
 function EditProfileErrorState({ error }: { error: unknown }) {
   return (
-    <div className="editProfileState">
-      <div className="editProfileStateText">
-        {getErrorMessage(error, "Erro ao carregar perfil")}
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      <Header />
+      <div className="flex flex-1">
+        <Sidebar />
+        <main className="flex-1">
+          <div className="editProfileState">
+            <div className="editProfileStateText">
+              {getErrorMessage(error, "Erro ao carregar perfil")}
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
@@ -213,20 +230,15 @@ function EditProfileContent({ me }: { me: MeResponse }) {
   const isSubmitting = updateMeMutation.isPending || updatePasswordMutation.isPending;
 
   return (
-    <div className="editProfilePage">
-      <aside className="editProfileSidebar">
-        <img src={logo} alt="Deadlock" className="editProfileSidebarLogo" />
-      </aside>
-
-      <main className="editProfileMain">
-        <header className="editProfileHeader">
-          <input type="text" placeholder="PESQUISAR" className="editProfileSearch" />
-        </header>
-
-        <div className="editProfileContentWrap">
-          <div className="editProfileContent">
-            <div className="editProfileCard">
-              <div className="editProfileGrid">
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      <Header />
+      <div className="flex flex-1">
+        <Sidebar />
+        <main className="flex-1">
+          <div className="editProfileContentWrap">
+            <div className="editProfileContent">
+              <div className="editProfileCard">
+                <div className="editProfileGrid">
                 <div className="editProfileLeft">
                   <button
                     type="button"
@@ -403,8 +415,9 @@ function EditProfileContent({ me }: { me: MeResponse }) {
               </div>
             </div>
           </div>
-        </div>
-      </main>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

@@ -175,3 +175,20 @@ export function usePosts() {
     refetchOnWindowFocus: false,
   });
 }
+
+async function deletePostRequest(postId: string) {
+  return request<unknown, { title: string; content: string }>({
+    path: `/posts/${postId}`,
+    method: "PATCH",
+    body: {
+      title: "Post apagado",
+      content: "[[DELETED]]",
+    },
+  });
+}
+
+export function useDeletePost() {
+  return useMutation<unknown, AppError, { postId: string }>({
+    mutationFn: ({ postId }) => deletePostRequest(postId),
+  });
+}
