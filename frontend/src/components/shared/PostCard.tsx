@@ -1,3 +1,5 @@
+import { UserIcon } from './UserIcon';
+
 interface PostCardProps {
   username: string;
   title: string;
@@ -8,9 +10,9 @@ interface PostCardProps {
 
 export function PostCard() {
   return (
-    <div className="w-full rounded-3xl border border-zinc-200 bg-default-color p-6 flex flex-col gap-3">
+    <div className="w-full rounded-3xl border mb-7 border-zinc-200 bg-default-color p-6 flex flex-col gap-3">
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-zinc-800" />
+        <UserIcon size="lg" />
         <span className="text-zinc-900 text-[]">@zakendo</span>
       </div>
 
