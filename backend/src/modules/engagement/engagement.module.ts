@@ -1,4 +1,8 @@
 import { Module } from '@nestjs/common';
+import { ViewsModule } from './views/views.module';
 
-@Module({})
+@Module({
+  imports: [ViewsModule],
+  exports: [ViewsModule],
+})
 export class EngagementModule {}

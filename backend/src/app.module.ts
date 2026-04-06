@@ -5,6 +5,8 @@ import { AuthModule } from 'src/modules/auth/auth.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ContentModule } from './modules/content/content.module';
+import { CustomRedisModule } from './redis/redis.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -21,9 +23,11 @@ import { ContentModule } from './modules/content/content.module';
         },
       ],
     }),
+    ScheduleModule.forRoot(),
     UserModule,
     AuthModule,
     ContentModule,
+    CustomRedisModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

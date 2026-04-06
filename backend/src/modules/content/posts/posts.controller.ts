@@ -36,13 +36,19 @@ import { PostErrorCode } from 'src/common/exceptions/error-codes/post-error.code
 import { PostErrorMessage } from 'src/common/exceptions/error-messages/post-error-messages';
 import { RequestErrorCode } from 'src/common/exceptions/error-codes/request-error.code';
 import { RequestErrorMessages } from 'src/common/exceptions/error-messages/request-error-messages';
+import { FingerprintInterceptor } from 'src/common/interceptors/fingerprint.interceptor';
+import { GetFingerprint } from 'src/common/decorators/getFingerprint.decorator';
+import { ViewsService } from 'src/modules/engagement/views/views.service';
 
 @ApiTags('Posts | Postagens')
 @ApiExtraModels(PostResponseDto)
 @Controller('posts')
 @UseInterceptors(ClassSerializerInterceptor)
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(
+    private readonly postsService: PostsService,
+    private readonly viewsService: ViewsService,
+  ) {}
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
@@ -125,6 +131,7 @@ export class PostsController {
 
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
+  @UseInterceptors(FingerprintInterceptor)
   @ApiOperation({
     summary: 'Buscar post por ID',
     description:
@@ -141,8 +148,16 @@ export class PostsController {
     code: PostErrorCode.POST_NOT_FOUND,
     message: PostErrorMessage.POST_NOT_FOUND,
   })
-  async findOneById(@Param('id') postId: string, @GetUserId() userId: string) {
+  async findOneById(
+    @Param('id') postId: string,
+    @GetUserId() userId: string,
+    @GetFingerprint() fingerprint: string,
+  ) {
     const post = await this.postsService.findOneById(postId);
+
+    this.viewsService.incrementView(postId, fingerprint).catch((error) => {
+      console.error('Error incrementing view:', error);
+    });
 
     return new PostResponseDto(post, userId);
   }
