@@ -34,9 +34,9 @@ model User {
   providers UserProvider[]
 
   posts         Post[]
-  likesPosts    Likes_Posts[]
+  postsVotes    PostVote[]
   postsSaves    Posts_Saves[]
-  likesComments Likes_Comments[]
+  commentsVotes CommentVote[]
 
   refreshTokens RefreshToken[]
   comments      Comment[]
@@ -65,11 +65,14 @@ model RefreshToken {
 }
 
 model Post {
-  id        String   @id @default(uuid())
-  title     String   @db.VarChar(255)
+  id        String  @id @default(uuid())
+  title     String  @db.VarChar(255)
   anonymous Boolean
-  content   String   @db.VarChar(20000)
-  views     Int      @default(0)
+  content   String  @db.VarChar(20000)
+  views     Int     @default(0)
+
+  scoreVotes Int @default(0)
+
   createdAt DateTime @default(now()) @db.Timestamp(3)
   updatedAt DateTime @default(now()) @updatedAt @db.Timestamp(3)
 
@@ -78,7 +81,7 @@ model Post {
 
   comments   Comment[]
   languages  Language[]
-  likesPosts Likes_Posts[]
+  votes      PostVote[]
   postsSaves Posts_Saves[]
 }
 
@@ -91,9 +94,12 @@ model Language {
 }
 
 model Comment {
-  id        String    @id @default(uuid())
-  content   String    @db.VarChar(10000)
-  anonymous Boolean   @default(false)
+  id        String  @id @default(uuid())
+  content   String  @db.VarChar(10000)
+  anonymous Boolean @default(false)
+
+  scoreVotes Int @default(0)
+
   createdAt DateTime  @default(now()) @db.Timestamp(3)
   updatedAt DateTime  @default(now()) @updatedAt @db.Timestamp(3)
   deletedAt DateTime? @db.Timestamp(3)
@@ -108,18 +114,36 @@ model Comment {
   parent            Comment?  @relation("CommentReplies", fields: [parent_comment_id], references: [id])
   replies           Comment[] @relation("CommentReplies")
 
-  likesComments Likes_Comments[]
+  votes CommentVote[]
 }
 
-model Likes_Posts {
-  post_id String
-  user_id String
-  is_like Boolean
+model PostVote {
+  id    String @id @default(uuid())
+  value Int    @default(0)
 
-  post Post @relation(fields: [post_id], references: [id])
-  user User @relation(fields: [user_id], references: [id])
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
 
-  @@id([post_id, user_id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamp(3)
+
+  @@unique([postId, userId])
+}
+
+model CommentVote {
+  id    String @id @default(uuid())
+  value Int    @default(0)
+
+  commentId String
+  comment   Comment @relation(fields: [commentId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([commentId, userId])
 }
 
 model Posts_Saves {
@@ -130,15 +154,4 @@ model Posts_Saves {
   user User @relation(fields: [user_id], references: [id])
 
   @@id([post_id, user_id])
-}
-
-model Likes_Comments {
-  comment_id String
-  user_id    String
-  is_like    Boolean
-
-  comment Comment @relation(fields: [comment_id], references: [id])
-  user    User    @relation(fields: [user_id], references: [id])
-
-  @@id([comment_id, user_id])
 }
