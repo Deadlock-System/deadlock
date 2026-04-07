@@ -40,10 +40,12 @@ export function PostCard(props: PostCardProps) {
   const displayContent = stripSnippetBlocks(props.content);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const dateToPostCard = formatDistanceToNow(new Date(props.createdAt), {
-    addSuffix: true,
-    locale: ptBR,
-  });
+  const dateToPostCard = props.createdAt
+    ? formatDistanceToNow(new Date(props.createdAt), {
+        addSuffix: true,
+        locale: ptBR,
+      })
+    : '';
 
   return (
     <div className="w-full rounded-3xl border border-zinc-200 bg-default-color p-6 flex flex-col gap-3">

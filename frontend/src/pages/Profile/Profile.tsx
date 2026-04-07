@@ -1,14 +1,14 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Header } from "../../components/shared/Header";
-import { PostCard } from "../../components/shared/PostCard";
-import { Sidebar } from "../../components/shared/Sidebar";
-import { useMe } from "../../services/ProfileService";
-import { useDeletePost, usePosts } from "../../services/CreatePostService";
-import { SENIORITY_LABELS } from "../../types/RegisterType";
-import { getErrorMessage } from "../../utils/ErrorMessage";
-import { resolveAvatarSrc, useAvatarsData } from "../../utils/avatar";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Header } from '../../components/shared/Header';
+import { PostCard } from '../../components/shared/PostCard';
+import { Sidebar } from '../../components/shared/Sidebar';
+import { useMe } from '../../services/ProfileService';
+import { useDeletePost, usePosts } from '../../services/CreatePostService';
+import { SENIORITY_LABELS } from '../../types/RegisterType';
+import { getErrorMessage } from '../../utils/ErrorMessage';
+import { resolveAvatarSrc, useAvatarsData } from '../../utils/avatar';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export default function Profile() {
   const postsQuery = usePosts();
   const deletePostMutation = useDeletePost();
   const avatarsData = useAvatarsData();
-  const [tagSearch, setTagSearch] = useState("");
+  const [tagSearch, setTagSearch] = useState('');
 
   const photoSrc = useMemo(() => {
     const storedPhotoUrl = meQuery.data?.userPhoto;
@@ -40,7 +40,7 @@ export default function Profile() {
     return (
       <div className="profileState">
         <div className="profileStateText">
-          {getErrorMessage(meQuery.error, "Erro ao carregar perfil")}
+          {getErrorMessage(meQuery.error, 'Erro ao carregar perfil')}
         </div>
       </div>
     );
@@ -53,9 +53,11 @@ export default function Profile() {
   const normalizedSearch = tagSearch.trim().toLowerCase();
   const visiblePosts = posts.filter((post) => {
     if (post.isOwner !== true) return false;
-    if (post.content === "[[DELETED]]") return false;
+    if (post.content === '[[DELETED]]') return false;
     if (!normalizedSearch) return true;
-    return (post.languages ?? []).some((lang) => lang.toLowerCase().includes(normalizedSearch));
+    return (post.languages ?? []).some((lang) =>
+      lang.toLowerCase().includes(normalizedSearch)
+    );
   });
 
   return (
@@ -85,7 +87,7 @@ export default function Profile() {
 
                 <button
                   type="button"
-                  onClick={() => navigate("/profile/edit")}
+                  onClick={() => navigate('/profile/edit')}
                   className="h-10 px-5 rounded-full border border-main-color text-main-color font-semibold hover:bg-zinc-200 transition-colors w-max"
                 >
                   Editar Perfil
@@ -112,7 +114,10 @@ export default function Profile() {
               </div>
             ) : postsQuery.isError ? (
               <div className="text-gray-500 flex items-center justify-center min-h-[40vh] text-lg">
-                {getErrorMessage(postsQuery.error, "Erro ao carregar postagens")}
+                {getErrorMessage(
+                  postsQuery.error,
+                  'Erro ao carregar postagens'
+                )}
               </div>
             ) : visiblePosts.length === 0 ? (
               <div className="text-gray-500 flex items-center justify-center min-h-[40vh] text-lg">
@@ -134,19 +139,30 @@ export default function Profile() {
                     <PostCard
                       key={post.id}
                       id={post.id}
-                      username={post.anonymous ? "anonimo" : post.user?.user_name ?? me.username}
+                      username={
+                        post.anonymous
+                          ? 'anonimo'
+                          : (post.user?.user_name ?? me.username)
+                      }
                       title={post.title}
                       content={post.content}
                       avatarSrc={postAvatarSrc}
                       languages={post.languages ?? []}
                       showMenu
-                      navigateState={{ from: "profile" }}
+                      navigateState={{ from: 'profile' }}
+                      createdAt={post.createdAt}
                       onDelete={() => {
-                        const confirmed = window.confirm("Deseja apagar este post?");
+                        const confirmed = window.confirm(
+                          'Deseja apagar este post?'
+                        );
                         if (!confirmed) return;
                         void deletePostMutation
                           .mutateAsync({ postId: post.id })
-                          .then(() => queryClient.invalidateQueries({ queryKey: ["posts"] }));
+                          .then(() =>
+                            queryClient.invalidateQueries({
+                              queryKey: ['posts'],
+                            })
+                          );
                       }}
                     />
                   );
