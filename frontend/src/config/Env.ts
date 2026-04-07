@@ -9,6 +9,7 @@ const EnvSchema = z.object({
   VITE_SHOW_COMMENTS: z.string().transform(stringToBoolean),
   VITE_SHOW_VIEWS: z.string().transform(stringToBoolean),
   VITE_SHOW_BOOKMARK: z.string().transform(stringToBoolean),
+  VITE_GOOGLE_OAUTH: z.string().transform(stringToBoolean),
 });
 
 const parsedEnv = EnvSchema.safeParse(import.meta.env);
@@ -24,4 +25,5 @@ export const env = {
   showComments: parsedEnv.data.VITE_SHOW_COMMENTS,
   showViews: parsedEnv.data.VITE_SHOW_VIEWS,
   showBookmark: parsedEnv.data.VITE_SHOW_BOOKMARK,
+  googleOauthButton: parsedEnv.data.VITE_GOOGLE_OAUTH,
 };
