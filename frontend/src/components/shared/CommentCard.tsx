@@ -1,18 +1,38 @@
 import { ArrowBigDown, ArrowBigUp } from 'lucide-react';
+import { useMemo } from 'react';
+import { resolveAvatarSrc, useAvatarsData } from '../../utils/avatar';
 
 export interface CommentCardProps {
   content: string;
   user: {
     user_name: string;
-    user_photo: string;
+    user_photo?: string | null;
+    userPhoto?: string | null;
   };
 }
 
 export function CommentCard(props: CommentCardProps) {
-  console.log('Props: ', props);
+  const avatarsData = useAvatarsData();
+  const avatarSrc = useMemo(() => {
+    const storedPhotoUrl = props.user.user_photo ?? props.user.userPhoto ?? null;
+    return resolveAvatarSrc({
+      avatars: avatarsData.avatars,
+      avatarsById: avatarsData.avatarsById,
+      storedPhotoUrl,
+    });
+  }, [avatarsData.avatars, avatarsData.avatarsById, props.user.userPhoto, props.user.user_photo]);
+
   return (
     <div className="w-fit max-w-full rounded-3xl border border-gray-500 bg-default-color p-6 flex gap-3">
-      <div className="w-12 h-12 rounded-full bg-zinc-800" />
+      {avatarSrc ? (
+        <img
+          src={avatarSrc}
+          alt="Foto do autor"
+          className="w-12 h-12 rounded-full object-cover border border-zinc-200"
+        />
+      ) : (
+        <div className="w-12 h-12 rounded-full bg-zinc-800" />
+      )}
 
       <div className="flex flex-col gap-2 flex-1 min-w-0">
         <span className="text-main-color">{`@${props.user.user_name}`}</span>

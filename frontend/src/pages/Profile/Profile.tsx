@@ -1,33 +1,21 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Header } from "../../components/shared/Header";
+import { PostCard } from "../../components/shared/PostCard";
+import { Sidebar } from "../../components/shared/Sidebar";
 import { useMe } from "../../services/ProfileService";
-import { usePosts } from "../../services/CreatePostService";
+import { useDeletePost, usePosts } from "../../services/CreatePostService";
 import { SENIORITY_LABELS } from "../../types/RegisterType";
 import { getErrorMessage } from "../../utils/ErrorMessage";
 import { resolveAvatarSrc, useAvatarsData } from "../../utils/avatar";
-import logo from "../../assets/logo-deadlock-sem-fundo.png";
-import "./Profile.css";
-
-function formatRelativeTime(createdAtIso: string) {
-  const createdAt = new Date(createdAtIso);
-  const diffMs = Date.now() - createdAt.getTime();
-  if (!Number.isFinite(diffMs) || diffMs < 0) return createdAt.toLocaleDateString();
-
-  const minutes = Math.floor(diffMs / 60_000);
-  if (minutes < 1) return "agora";
-  if (minutes < 60) return `há ${minutes} min`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `há ${hours}h`;
-
-  const days = Math.floor(hours / 24);
-  return `há ${days} dias`;
-}
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function Profile() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const meQuery = useMe();
   const postsQuery = usePosts();
+  const deletePostMutation = useDeletePost();
   const avatarsData = useAvatarsData();
   const [tagSearch, setTagSearch] = useState("");
 
@@ -65,48 +53,31 @@ export default function Profile() {
   const normalizedSearch = tagSearch.trim().toLowerCase();
   const visiblePosts = posts.filter((post) => {
     if (post.isOwner !== true) return false;
+    if (post.content === "[[DELETED]]") return false;
     if (!normalizedSearch) return true;
     return (post.languages ?? []).some((lang) => lang.toLowerCase().includes(normalizedSearch));
   });
 
   return (
-    <div className="profilePage">
-      <aside className="profileSidebar">
-        <img src={logo} alt="Deadlock" className="profileSidebarLogo" />
-        <button
-          type="button"
-          className="profileSidebarAddPost"
-          onClick={() => navigate("/post/create")}
-          aria-label="Criar postagem"
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path d="M19 11H13V5a1 1 0 0 0-2 0v6H5a1 1 0 0 0 0 2h6v6a1 1 0 0 0 2 0v-6h6a1 1 0 0 0 0-2Z" />
-          </svg>
-        </button>
-      </aside>
-
-      <main className="profileMain">
-        <header className="profileHeader">
-          <input type="text" placeholder="PESQUISAR" className="profileSearch" />
-        </header>
-
-        <div className="profileContentWrap">
-          <div className="profileContent">
-            <div className="profileCard">
-              <div className="profileUserRow">
-                <div className="profileUserLeft">
-                  <img src={photoSrc} alt="Foto de perfil" className="profileAvatar" />
-
-                  <div className="profileUserText">
-                    <div className="profileUsername">&lt;{me.username} /&gt;</div>
-                    <div className="profileSeniority">
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      <Header />
+      <div className="flex flex-1">
+        <Sidebar showProfileShortcut={false} />
+        <main className="flex-1">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
+            <div className="w-full rounded-3xl border border-zinc-200 bg-default-color p-6 flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <img
+                    src={photoSrc}
+                    alt="Foto de perfil"
+                    className="w-24 h-24 rounded-full object-cover border border-zinc-200"
+                  />
+                  <div className="flex flex-col gap-1">
+                    <div className="text-main-color text-3xl font-semibold break-words">
+                      &lt;{me.username} /&gt;
+                    </div>
+                    <div className="text-main-color">
                       Senioridade: {SENIORITY_LABELS[me.seniorityId]}
                     </div>
                   </div>
@@ -115,105 +86,76 @@ export default function Profile() {
                 <button
                   type="button"
                   onClick={() => navigate("/profile/edit")}
-                  className="profileEditButton"
+                  className="h-10 px-5 rounded-full border border-main-color text-main-color font-semibold hover:bg-zinc-200 transition-colors w-max"
                 >
-                  <span aria-hidden="true" className="profileEditIcon">
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm18.71-11.04a1.003 1.003 0 0 0 0-1.42l-2.5-2.5a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.99-1.66Z" />
-                    </svg>
-                  </span>
                   Editar Perfil
                 </button>
               </div>
             </div>
 
-            <section className="profileSection">
-              <div className="profileSectionHeader">
-                <div className="profileSectionTitle">POSTAGENS REALIZADAS</div>
-                <input
-                  type="text"
-                  placeholder="PESQUISAR"
-                  className="profileSectionSearch"
-                  value={tagSearch}
-                  onChange={(e) => setTagSearch(e.target.value)}
-                />
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="text-main-color font-semibold tracking-wide">
+                POSTAGENS REALIZADAS
               </div>
+              <input
+                type="text"
+                placeholder="PESQUISAR"
+                className="w-full sm:w-72 h-10 px-4 rounded-full border border-gray-400 bg-white text-sm text-zinc-600 placeholder:uppercase focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
+                value={tagSearch}
+                onChange={(e) => setTagSearch(e.target.value)}
+              />
+            </div>
 
-              {postsQuery.isLoading ? (
-                <div className="profileEmpty">Carregando postagens...</div>
-              ) : postsQuery.isError ? (
-                <div className="profileEmpty">
-                  {getErrorMessage(postsQuery.error, "Erro ao carregar postagens")}
-                </div>
-              ) : visiblePosts.length === 0 ? (
-                <div className="profileEmpty">Nenhuma postagem para exibir ainda.</div>
-              ) : (
-                <div className="profilePostsList">
-                  {visiblePosts.map((post) => {
-                    const storedPhotoUrl = post.anonymous ? null : (post.user?.user_photo ?? me.userPhoto);
-                    const postAvatarSrc = resolveAvatarSrc({
-                      avatars: avatarsData.avatars,
-                      avatarsById: avatarsData.avatarsById,
-                      storedPhotoUrl,
-                    });
+            {postsQuery.isLoading ? (
+              <div className="text-gray-500 flex items-center justify-center min-h-[40vh] text-lg">
+                Carregando postagens...
+              </div>
+            ) : postsQuery.isError ? (
+              <div className="text-gray-500 flex items-center justify-center min-h-[40vh] text-lg">
+                {getErrorMessage(postsQuery.error, "Erro ao carregar postagens")}
+              </div>
+            ) : visiblePosts.length === 0 ? (
+              <div className="text-gray-500 flex items-center justify-center min-h-[40vh] text-lg">
+                Nenhuma postagem para exibir ainda.
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {visiblePosts.map((post) => {
+                  const storedPhotoUrl = post.anonymous
+                    ? null
+                    : (post.user?.user_photo ?? me.userPhoto);
+                  const postAvatarSrc = resolveAvatarSrc({
+                    avatars: avatarsData.avatars,
+                    avatarsById: avatarsData.avatarsById,
+                    storedPhotoUrl,
+                  });
 
-                    const handle = post.anonymous ? "@anonimo" : `@${post.user?.user_name ?? me.username}`;
-
-                    return (
-                      <article key={post.id} className="profilePostCard">
-                      <div className="profilePostTop">
-                        <div className="profilePostAuthor">
-                          <img
-                            src={postAvatarSrc}
-                            alt="Autor"
-                            className="profilePostAvatar"
-                          />
-                          <div className="profilePostAuthorText">
-                            <div className="profilePostHandle">
-                              {handle}
-                            </div>
-                          </div>
-                        </div>
-                        <button type="button" className="profilePostMenu" aria-label="Opções">
-                          <span aria-hidden="true">⋮</span>
-                        </button>
-                      </div>
-
-                      <div className="profilePostBody">
-                        <div className="profilePostTitle">&lt; {post.title} /&gt;</div>
-                        <div className="profilePostContent">{post.content}</div>
-                      </div>
-
-                      <div className="profilePostBottom">
-                        <div className="profilePostTags">
-                          {(post.languages ?? []).map((lang) => (
-                            <span key={`${post.id}-${lang}`} className="profilePostTag">
-                              {lang}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="profilePostMeta">
-                          <span className="profilePostMetaItem">
-                            {typeof post.views === "number" ? post.views : 0}
-                          </span>
-                          <span className="profilePostMetaItem">{formatRelativeTime(post.createdAt)}</span>
-                        </div>
-                      </div>
-                      </article>
-                    );
-                  })}
-                </div>
-              )}
-            </section>
+                  return (
+                    <PostCard
+                      key={post.id}
+                      id={post.id}
+                      username={post.anonymous ? "anonimo" : post.user?.user_name ?? me.username}
+                      title={post.title}
+                      content={post.content}
+                      avatarSrc={postAvatarSrc}
+                      languages={post.languages ?? []}
+                      showMenu
+                      navigateState={{ from: "profile" }}
+                      onDelete={() => {
+                        const confirmed = window.confirm("Deseja apagar este post?");
+                        if (!confirmed) return;
+                        void deletePostMutation
+                          .mutateAsync({ postId: post.id })
+                          .then(() => queryClient.invalidateQueries({ queryKey: ["posts"] }));
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            )}
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

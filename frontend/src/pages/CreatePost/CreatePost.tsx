@@ -4,11 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import Editor, { loader } from "@monaco-editor/react";
 import type { Monaco } from "@monaco-editor/react";
+import { Header } from "../../components/shared/Header";
+import { Sidebar } from "../../components/shared/Sidebar";
 import { useCreatePost } from "../../services/CreatePostService";
 import { useMe } from "../../services/ProfileService";
 import { getErrorMessage } from "../../utils/ErrorMessage";
 import { resolveAvatarSrc, useAvatarsData } from "../../utils/avatar";
-import logo from "../../assets/logo-deadlock-sem-fundo.png";
 import "./CreatePost.css";
 
 type Mode = "edit" | "preview";
@@ -53,6 +54,22 @@ function addUniqueTag(tags: Tag[], tagToAdd: string) {
 function removeTag(tags: Tag[], tagToRemove: string) {
   const normalized = normalizeTag(tagToRemove);
   return tags.filter((t) => normalizeTag(t) !== normalized);
+}
+
+function buildContentWithSnippets(params: { content: string; snippets: Snippet[] }) {
+  const base = params.content.trim();
+  const blocks = params.snippets
+    .map((snippet) => {
+      const code = snippet.code.trim();
+      if (!code) return "";
+      const lang = snippet.languageId?.trim() || "";
+      const tag = lang ? `\n\n[[SNIPPET lang=${lang}]]\n${code}\n[[/SNIPPET]]\n` : `\n\n[[SNIPPET]]\n${code}\n[[/SNIPPET]]\n`;
+      return tag;
+    })
+    .filter(Boolean)
+    .join("");
+
+  return `${base}${blocks}`.trim();
 }
 
 function clampVisibleLines(lineCount: number) {
@@ -283,14 +300,23 @@ export default function CreatePost() {
         return;
       }
 
+      const contentWithSnippets = buildContentWithSnippets({ content: trimmedContent, snippets });
+
       await createPostMutation.mutateAsync({
         title: trimmedTitle,
-        content: trimmedContent,
+        content: contentWithSnippets,
         anonymous: isAnonymous,
         languages: tags,
       });
 
       await queryClient.invalidateQueries({ queryKey: ["posts"] });
+      setTitle("");
+      setContent("");
+      setTags([]);
+      setSnippets([]);
+      setFullscreenSnippetId(null);
+      setIsAnonymous(false);
+      setMode("edit");
       navigate("/profile", { replace: true });
     } catch (error: unknown) {
       setSubmitError(getErrorMessage(error, "Erro ao criar post"));
@@ -318,7 +344,11 @@ export default function CreatePost() {
       : "@usuario";
 
   return (
-    <div className="createPostPage">
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      <Header />
+      <div className="flex flex-1">
+        <Sidebar />
+        <main className="flex-1">
       {activeFullscreenSnippet ? (
         <FullscreenSnippet
           snippet={activeFullscreenSnippet}
@@ -327,23 +357,14 @@ export default function CreatePost() {
         />
       ) : null}
 
-      <aside className="createPostSidebar">
-        <img src={logo} alt="Deadlock" className="createPostSidebarLogo" />
-      </aside>
+          <div className="createPostContentWrap">
+            <div className="createPostContent">
+              <div className="createPostTopRow">
+                <h2 className="createPostTitle">ESCREVA SUA DUVIDA</h2>
+              </div>
 
-      <main className="createPostMain">
-        <header className="createPostHeader">
-          <input type="text" placeholder="PESQUISAR" className="createPostSearch" />
-        </header>
-
-        <div className="createPostContentWrap">
-          <div className="createPostContent">
-            <div className="createPostTopRow">
-              <h2 className="createPostTitle">ESCREVA SUA DUVIDA</h2>
-            </div>
-
-            <div className="createPostGrid">
-              <form className="createPostCard" onSubmit={handleSubmit}>
+              <div className="createPostGrid">
+                <form className="createPostCard" onSubmit={handleSubmit}>
                 {mode === "edit" ? (
                   <>
                     <div className="createPostFieldBox">
@@ -613,8 +634,9 @@ export default function CreatePost() {
               </aside>
             </div>
           </div>
-        </div>
-      </main>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
