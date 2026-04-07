@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -8,6 +9,7 @@ import {
   Patch,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUserId } from '../auth/decorators/get-user-id.decorator';
@@ -29,12 +31,18 @@ import { UserErrorMessages } from 'src/common/exceptions/error-messages/user-err
 import { RequestErrorCode } from 'src/common/exceptions/error-codes/request-error.code';
 import { RequestErrorMessages } from 'src/common/exceptions/error-messages/request-error-messages';
 import { UserResponseDto } from './dto/user-response.dto';
+import { PostResponseDto } from '../content/posts/dto/response/post-response.dto';
+import { PostsService } from '../content/posts/posts.service';
+import { ApiPostResponse } from 'src/common/decorators/swagger/api-post-response.decorator';
 
 @ApiTags('Users | Usuários')
 @ApiExtraModels(UserResponseDto)
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly postsService: PostsService,
+  ) {}
 
   @Post()
   @ApiOperation({
@@ -115,6 +123,21 @@ export class UserController {
   })
   findByUserId(@GetUserId() userId: string) {
     return this.userService.findByUserId(userId);
+  }
+
+  @Get('me/posts')
+  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(AuthGuard('jwt'))
+  @ApiAuthCookie()
+  @ApiOperation({
+    summary: 'Buscar posts do usuário logado',
+    description:
+      'Retorna os posts do usuário autenticado com base no token JWT.',
+  })
+  @ApiPostResponse(HttpStatus.OK, 'Posts retornados com sucesso.') // TODO: mudar formato pra array
+  async getMyPosts(@GetUserId() userId: string) {
+    const posts = await this.postsService.findByUserId(userId);
+    return PostResponseDto.fromArray(posts, userId);
   }
 
   @Patch('me')

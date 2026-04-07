@@ -33,16 +33,6 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
       },
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  server: {
-    headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
     },
 
     preview: {

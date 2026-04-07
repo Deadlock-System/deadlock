@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { GetPostsDocs } from './posts.swagger';
 
 export class GetPostsDto {
@@ -18,4 +18,9 @@ export class GetPostsDto {
   @IsOptional()
   @Type(() => Number)
   limit: number = 20;
+
+  @ApiProperty(GetPostsDocs.search)
+  @IsOptional()
+  @IsString()
+  search?: string;
 }
