@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
+import { useEffect, useRef } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useMe } from "../../services/ProfileService";
+import { notifyLoginRequired } from "../../utils/ErrorMessage";
 
 function LoadingScreen() {
   return (
@@ -67,11 +69,25 @@ export default function RequireAuth({ children }: { children: ReactNode }) {
   if (meQuery.isError) {
     const status = meQuery.error?.status;
     if (status === 401 || status === 403) {
-      return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+      return (
+        <RedirectToLoginWithToast from={`${location.pathname}${location.search}`} />
+      );
     }
 
     return <ErrorScreen status={status} onRetry={() => void meQuery.refetch()} />;
   }
 
   return children;
+}
+
+function RedirectToLoginWithToast({ from }: { from: string }) {
+  const dispatched = useRef(false);
+
+  useEffect(() => {
+    if (dispatched.current) return;
+    dispatched.current = true;
+    notifyLoginRequired({ message: "Para acessar esta página, faça login.", from });
+  }, [from]);
+
+  return <Navigate to="/login" replace state={{ from }} />;
 }
