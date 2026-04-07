@@ -11,7 +11,9 @@ import { env } from '../../config/Env';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-export interface PostCardProps {
+import { UserIcon } from './UserIcon';
+
+interface PostCardProps {
   id: string;
   username: string;
   title: string;
