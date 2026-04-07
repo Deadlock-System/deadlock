@@ -26,11 +26,13 @@ function resolveApiBaseUrl() {
 
 function getErrorCode(payload: unknown, status: number) {
   const code =
-    typeof payload === 'object' && payload !== null && 'code' in payload
+    typeof payload === "object" &&
+    payload !== null &&
+    "code" in payload
       ? (payload as { code?: unknown }).code
       : null;
 
-  return typeof code === 'string' ? code : `HTTP_${status}`;
+  return typeof code === "string" ? code : `HTTP_${status}`;
 }
 
 async function request<T>(params: {
