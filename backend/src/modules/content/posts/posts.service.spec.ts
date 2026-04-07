@@ -63,6 +63,7 @@ describe('PostsService', () => {
         anonymous: createPostDto.anonymous,
         user_id: userId,
         views: 0,
+        scoreVotes: 0,
         languages: [],
         user: userSelectFields,
         createdAt: new Date(),
@@ -92,6 +93,7 @@ describe('PostsService', () => {
               seniority_id: true,
             },
           },
+          votes: { where: { userId } },
         },
       });
     });
@@ -111,6 +113,7 @@ describe('PostsService', () => {
         anonymous: createPostDto.anonymous,
         user_id: userId,
         views: 0,
+        scoreVotes: 0,
         languages: [
           { slug: 'typescript', name: 'TypeScript' },
           { slug: 'python', name: 'Python' },
@@ -154,6 +157,7 @@ describe('PostsService', () => {
               seniority_id: true,
             },
           },
+          votes: { where: { userId } },
         },
       });
     });
@@ -173,6 +177,7 @@ describe('PostsService', () => {
         anonymous: createPostDto.anonymous,
         user_id: userId,
         views: 0,
+        scoreVotes: 0,
         languages: [
           { slug: 'javascript', name: 'JavaScript' },
           { slug: 'go', name: 'Go' },
@@ -222,6 +227,7 @@ describe('PostsService', () => {
         anonymous: createPostDto.anonymous,
         user_id: userId,
         views: 0,
+        scoreVotes: 0,
         languages: [{ slug: 'typescript', name: 'TypeScript' }],
         user: userSelectFields,
         createdAt: new Date(),
@@ -264,6 +270,7 @@ describe('PostsService', () => {
         anonymous: createPostDto.anonymous,
         user_id: userId,
         views: 0,
+        scoreVotes: 0,
         languages: [],
         user: userSelectFields,
         createdAt: new Date(),
@@ -297,6 +304,7 @@ describe('PostsService', () => {
         anonymous: true,
         user_id: userId,
         views: 0,
+        scoreVotes: 0,
         languages: [],
         user: userSelectFields,
         createdAt: new Date(),
@@ -321,6 +329,7 @@ describe('PostsService', () => {
         anonymous: false,
         user_id: 'user-1',
         views: 0,
+        scoreVotes: 0,
         languages: [{ slug: 'typescript', name: 'TypeScript' }],
         user: userSelectFields,
         createdAt: new Date(),
@@ -333,6 +342,7 @@ describe('PostsService', () => {
         anonymous: true,
         user_id: 'user-2',
         views: 0,
+        scoreVotes: 0,
         languages: [],
         user: userSelectFields,
         createdAt: new Date(),
@@ -365,6 +375,7 @@ describe('PostsService', () => {
               seniority_id: true,
             },
           },
+          votes: false,
         },
       });
       expect(prisma.post.count).toHaveBeenCalledWith({ where: {} });
@@ -476,6 +487,7 @@ describe('PostsService', () => {
               seniority_id: true,
             },
           },
+          votes: false,
         },
       });
       expect(prisma.post.count).toHaveBeenCalledWith({
@@ -546,6 +558,7 @@ describe('PostsService', () => {
         anonymous: false,
         user_id: userId,
         views: 0,
+        scoreVotes: 0,
         languages: [{ slug: 'typescript', name: 'TypeScript' }],
         user: userSelectFields,
         createdAt: new Date(),
@@ -558,6 +571,7 @@ describe('PostsService', () => {
         anonymous: true,
         user_id: userId,
         views: 0,
+        scoreVotes: 0,
         languages: [],
         user: userSelectFields,
         createdAt: new Date(),
@@ -584,6 +598,7 @@ describe('PostsService', () => {
               seniority_id: true,
             },
           },
+          votes: { where: { userId } },
         },
       });
     });
@@ -625,6 +640,7 @@ describe('PostsService', () => {
         anonymous: false,
         user_id: 'user-id-mock',
         views: 5,
+        scoreVotes: 0,
         languages: [{ slug: 'typescript', name: 'TypeScript' }],
         user: userSelectFields,
         createdAt: new Date(),
@@ -648,6 +664,7 @@ describe('PostsService', () => {
               seniority_id: true,
             },
           },
+          votes: false,
         },
       });
     });
@@ -677,6 +694,7 @@ describe('PostsService', () => {
               seniority_id: true,
             },
           },
+          votes: false,
         },
       });
     });
@@ -693,6 +711,7 @@ describe('PostsService', () => {
       anonymous: false,
       user_id: userId,
       views: 0,
+      scoreVotes: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -737,6 +756,7 @@ describe('PostsService', () => {
               seniority_id: true,
             },
           },
+          votes: { where: { userId } },
         },
       });
     });
@@ -791,6 +811,7 @@ describe('PostsService', () => {
               seniority_id: true,
             },
           },
+          votes: { where: { userId } },
         },
       });
     });

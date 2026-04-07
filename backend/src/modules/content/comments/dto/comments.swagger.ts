@@ -67,4 +67,10 @@ export const CommentTreeResponseDocs: Record<
     description: 'Lista de respostas diretas a este comentário.',
     isArray: true,
   },
+  scoreVotes: {
+    // TODO: implementar atualizações da doc swagger
+  },
+  myVote: {
+    // TODO: implementar atualizações da doc swagger
+  },
 };

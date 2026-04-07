@@ -33,13 +33,21 @@ export class PostsService {
         user_id: userId,
         languages: this.buildLanguagesPayload(languages, false),
       },
-      include: POST_DEFAULT_INCLUDES,
+      include: {
+        ...POST_DEFAULT_INCLUDES,
+        votes: userId ? { where: { userId: userId } } : false,
+      },
     });
 
     return post;
   }
 
-  async findAll(page: number, limit: number, searchKey?: string) {
+  async findAll(
+    page: number,
+    limit: number,
+    searchKey?: string,
+    currentUserId?: string,
+  ) {
     const skip = (page - 1) * limit;
 
     const whereClause: Prisma.PostWhereInput = searchKey
@@ -57,17 +65,23 @@ export class PostsService {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: POST_DEFAULT_INCLUDES,
+        include: {
+          ...POST_DEFAULT_INCLUDES,
+          votes: currentUserId ? { where: { userId: currentUserId } } : false,
+        },
       }),
       this.prisma.post.count({ where: whereClause }),
     ]);
     return { posts, total };
   }
 
-  async findOneById(postId: string) {
+  async findOneById(postId: string, currentUserId?: string) {
     const existingPost = await this.prisma.post.findUnique({
       where: { id: postId },
-      include: POST_DEFAULT_INCLUDES,
+      include: {
+        ...POST_DEFAULT_INCLUDES,
+        votes: currentUserId ? { where: { userId: currentUserId } } : false,
+      },
     });
 
     if (!existingPost) throw new PostNotFoundException();
@@ -81,7 +95,10 @@ export class PostsService {
         user_id: userId,
       },
       orderBy: { createdAt: 'desc' },
-      include: POST_DEFAULT_INCLUDES,
+      include: {
+        ...POST_DEFAULT_INCLUDES,
+        votes: userId ? { where: { userId: userId } } : false,
+      },
     });
   }
 
@@ -104,7 +121,10 @@ export class PostsService {
         ...updatePostDto,
         languages: this.buildLanguagesPayload(updatePostDto.languages, true),
       },
-      include: POST_DEFAULT_INCLUDES,
+      include: {
+        ...POST_DEFAULT_INCLUDES,
+        votes: userId ? { where: { userId: userId } } : false,
+      },
     });
 
     return updatedPost;

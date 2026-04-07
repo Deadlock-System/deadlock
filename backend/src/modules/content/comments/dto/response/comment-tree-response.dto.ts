@@ -44,6 +44,15 @@ export class CommentTreeResponseDto {
   @Expose()
   anonymous: boolean;
 
+  @Expose()
+  scoreVotes: number;
+
+  @Expose()
+  @Transform(({ obj }: { obj: { votes: { value: number }[] } }) => {
+    return obj.votes?.[0]?.value ?? 0;
+  })
+  myVote: number;
+
   @ApiProperty(CommentTreeResponseDocs.createdAt)
   @Expose()
   createdAt: Date;

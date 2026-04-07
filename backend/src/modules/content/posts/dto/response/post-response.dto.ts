@@ -12,6 +12,10 @@ import {
 } from 'class-transformer';
 import { PostResponseDocs, PostUserSummaryDocs } from '../posts.swagger';
 
+export type PostInput = Post & {
+  votes?: { value: number }[];
+};
+
 export class PostUserSummaryDto {
   @ApiProperty(PostUserSummaryDocs.id)
   id: string;
@@ -74,17 +78,30 @@ export class PostResponseDto {
   @Expose()
   readonly views: number;
 
+  @Expose()
+  readonly scoreVotes: number;
+
+  @Expose()
+  readonly myVote: number;
+
+  @Exclude()
+  readonly votes: [];
+
   @ApiProperty(PostResponseDocs.languages)
   @Expose()
   readonly languages: string[];
 
-  constructor(partial: Partial<Post>, currentUserId?: string) {
+  constructor(partial: Partial<PostInput>, currentUserId?: string) {
     Object.assign(this, partial);
 
     this.isOwner = currentUserId === this.user_id;
+
+    this.scoreVotes = partial.scoreVotes ?? 0;
+
+    this.myVote = partial.votes?.[0]?.value ?? 0;
   }
 
-  static fromArray(posts: Post[], currentUserId?: string) {
+  static fromArray(posts: PostInput[], currentUserId?: string) {
     return posts.map((post) => new PostResponseDto(post, currentUserId));
   }
 }

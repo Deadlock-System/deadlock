@@ -77,6 +77,15 @@ export const PostResponseDocs: Record<PostResponseDtoKeys, ApiPropertyOptions> =
       example: ['TypeScript', 'Prisma'],
       isArray: true,
     },
+    scoreVotes: {
+      // TODO: implementar atualizações da doc swagger
+    },
+    myVote: {
+      // TODO: implementar atualizações da doc swagger
+    },
+    votes: {
+      // TODO: implementar atualizações da doc swagger
+    },
   };
 
 export const PostUserSummaryDocs = {
