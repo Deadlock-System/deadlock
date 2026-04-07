@@ -1,0 +1,77 @@
+.field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fieldLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.textInputWrap {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+}
+
+.textInput {
+  width: 100%;
+  height: 44px;
+  border-radius: 12px;
+  border: 1.5px solid #7c8792;
+  background: #fbfbfc;
+  padding: 0 18px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #263f4c;
+  text-align: center;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.textInputWithToggle {
+  padding-right: 48px;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(38, 63, 76, 0.18);
+  background: #ffffff;
+  color: #263f4c;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.passwordToggle:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.textInput::placeholder {
+  color: #263f4c;
+  opacity: 0.9;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.textInput:focus {
+  border-color: #203c47;
+  box-shadow: 0 0 0 3px rgba(32, 60, 71, 0.18);
+}

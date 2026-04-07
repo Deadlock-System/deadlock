@@ -5,15 +5,17 @@ services:
       - .env.docker
     volumes:
       - .:/usr/src/app
-    command: npm run start:dev
-    container_name: backend
+    command: sh ./entrypoint.sh
+    container_name: deadlockBackend
     depends_on:
       - db
+      - redis
+    restart: always
     environment:
       - DOCKER=true
     ports:
-      - "${PORT}:${PORT}"
-      - "51212:51212"
+      - '${PORT}:${PORT}'
+      - '51212:51212'
 
   db:
     image: postgres:15
@@ -22,9 +24,19 @@ services:
     env_file:
       - .env.docker
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - deadlock_postgres_volume:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: deadlock-redis
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - deadlock_redis_volume:/data
 
 volumes:
-  postgres_data:
+  deadlock_postgres_volume:
+  deadlock_redis_volume:

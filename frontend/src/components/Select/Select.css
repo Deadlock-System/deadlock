@@ -1,0 +1,50 @@
+.field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fieldLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.selectInput {
+  width: 100%;
+  max-width: 300px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1.5px solid #7c8792;
+  background-color: #fbfbfc;
+  padding: 0 44px 0 18px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #263f4c;
+  text-align: center;
+  text-align-last: center;
+  appearance: none;
+  outline: none;
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px 16px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.selectInput option {
+  text-align: center;
+}
+
+.selectInput:focus {
+  border-color: #203c47;
+  box-shadow: 0 0 0 3px rgba(32, 60, 71, 0.18);
+}

@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
   engineType = "binary"
 }
 
@@ -7,10 +7,151 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Seniority {
+  NOT_SELECTED
+  STUDENDT
+  JUNIOR
+  PLENO
+  SENIOR
+  TECH_LEAD
+  C_LEVEL
+}
+
+enum ProviderType {
+  GITHUB
+  GOOGLE
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  password  String
-  createdAt DateTime @default(now())
+  id              String    @id @default(uuid())
+  email           String?   @unique
+  user_name       String    @unique
+  user_photo      String?
+  hashed_password String?
+  createdAt       DateTime  @default(now()) @db.Timestamp(3)
+  seniority_id    Seniority @default(NOT_SELECTED)
+
+  providers UserProvider[]
+
+  posts         Post[]
+  postsVotes    PostVote[]
+  postsSaves    Posts_Saves[]
+  commentsVotes CommentVote[]
+
+  refreshTokens RefreshToken[]
+  comments      Comment[]
+}
+
+model UserProvider {
+  id         String       @id @default(uuid())
+  provider   ProviderType
+  providerId String
+  user       User         @relation(fields: [userId], references: [id])
+  userId     String
+  createdAt  DateTime     @default(now()) @db.Timestamp(3)
+
+  @@unique([provider, providerId])
+  @@unique([userId, provider])
+}
+
+model RefreshToken {
+  id         String   @id @default(uuid())
+  token      String
+  expires_at DateTime
+  createdAt  DateTime @default(now()) @db.Timestamp(3)
+
+  user_id String @unique
+  user    User   @relation(fields: [user_id], references: [id])
+}
+
+model Post {
+  id        String  @id @default(uuid())
+  title     String  @db.VarChar(255)
+  anonymous Boolean
+  content   String  @db.VarChar(20000)
+  views     Int     @default(0)
+
+  scoreVotes Int @default(0)
+
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamp(3)
+
+  user_id String
+  user    User   @relation(fields: [user_id], references: [id])
+
+  comments   Comment[]
+  languages  Language[]
+  votes      PostVote[]
+  postsSaves Posts_Saves[]
+}
+
+model Language {
+  id   Int    @id @default(autoincrement()) @db.SmallInt
+  slug String @unique
+  name String
+
+  posts Post[]
+}
+
+model Comment {
+  id        String  @id @default(uuid())
+  content   String  @db.VarChar(10000)
+  anonymous Boolean @default(false)
+
+  scoreVotes Int @default(0)
+
+  createdAt DateTime  @default(now()) @db.Timestamp(3)
+  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamp(3)
+  deletedAt DateTime? @db.Timestamp(3)
+
+  user_id String
+  user    User   @relation(fields: [user_id], references: [id])
+
+  post_id String
+  post    Post   @relation(fields: [post_id], references: [id])
+
+  parent_comment_id String?
+  parent            Comment?  @relation("CommentReplies", fields: [parent_comment_id], references: [id])
+  replies           Comment[] @relation("CommentReplies")
+
+  votes CommentVote[]
+}
+
+model PostVote {
+  id    String @id @default(uuid())
+  value Int    @default(0)
+
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamp(3)
+
+  @@unique([postId, userId])
+}
+
+model CommentVote {
+  id    String @id @default(uuid())
+  value Int    @default(0)
+
+  commentId String
+  comment   Comment @relation(fields: [commentId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([commentId, userId])
+}
+
+model Posts_Saves {
+  post_id String
+  user_id String
+
+  post Post @relation(fields: [post_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
+
+  @@id([post_id, user_id])
 }
