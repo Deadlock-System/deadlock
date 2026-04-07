@@ -16,6 +16,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { postService } from '../shared/services/PostService';
 import { useDeletePost } from '../services/CreatePostService';
 import { useQueryClient } from '@tanstack/react-query';
+import { useMe } from '../services/ProfileService';
+import { notifyLoginRequired } from '../utils/ErrorMessage';
 
 type PostViewState = {
   title?: string;
@@ -192,9 +194,12 @@ export function PostView() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const deletePostMutation = useDeletePost();
+  const meQuery = useMe();
+  const isAuthenticated = meQuery.isSuccess;
   const state = (location.state ?? {}) as PostViewState;
   const [comments, setComments] = useState<CommentCardProps[]>([]);
   const [newComment, setNewComment] = useState('');
+  const [voteFilled, setVoteFilled] = useState(false);
   const [post, setPost] = useState<PostData>(() => ({
     id: id ?? '',
     title: state.title ?? '',
@@ -215,7 +220,25 @@ export function PostView() {
     });
   }, [id, state.content, state.languages, state.title]);
 
+  function handleVoteClick() {
+    if (!isAuthenticated) {
+      notifyLoginRequired({ message: 'Para votar, faça login.', from: `/postview/${id ?? ''}` });
+      return;
+    }
+    setVoteFilled((prev) => !prev);
+  }
+
+  function handleBookmarkClick() {
+    if (!isAuthenticated) {
+      notifyLoginRequired({ message: 'Para salvar postagens, faça login.', from: `/postview/${id ?? ''}` });
+    }
+  }
+
   async function handleAddComment() {
+    if (!isAuthenticated) {
+      notifyLoginRequired({ message: 'Para comentar, faça login.', from: `/postview/${id ?? ''}` });
+      return;
+    }
     if (!newComment.trim()) return;
 
     try {
@@ -347,7 +370,6 @@ export function PostView() {
                         <div
                           key={`code-${idx}`}
                           className="w-full rounded-2xl border border-zinc-200 overflow-hidden bg-default-color"
-                          style={{ transform: 'translateZ(0)' }}
                         >
                           <div className="px-3 py-1.5 bg-zinc-100 border-b border-zinc-200 flex items-center justify-between gap-3">
                             <div className="text-xs uppercase tracking-wide text-main-color">
@@ -393,21 +415,19 @@ export function PostView() {
 
               <div className="hidden sm:flex items-center gap-4">
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl border border-main-color w-max">
-                  <button className="active:scale-92 transition-colors group">
+                  <button type="button" className="active:scale-92 transition-colors group" onClick={handleVoteClick}>
                     <ArrowBigUp
                       className="text-main-color group-hover:text-main-color group-hover:scale-120 transition-all cursor-pointer"
-                      fill={false ? '#263F4C' : 'none'}
-                      onClick={() => {}}
+                      fill={voteFilled ? '#263F4C' : 'none'}
                     />
                   </button>
 
                   <p className="text-sm font-medium leading-none">400</p>
 
-                  <button className="active:scale-92 transition-colors group">
+                  <button type="button" className="active:scale-92 transition-colors group" onClick={handleVoteClick}>
                     <ArrowBigDown
                       className="text-main-color group-hover:text-main-color group-hover:scale-120 transition-all cursor-pointer"
-                      fill={false ? '#263F4C' : 'none'}
-                      onClick={() => {}}
+                      fill={voteFilled ? '#263F4C' : 'none'}
                     />
                   </button>
                 </div>
@@ -426,7 +446,11 @@ export function PostView() {
 
                 <p className="text-sm text-main-color ml-4 ">Há 4 dias</p>
 
-                <button className="ml-auto p-2 active:scale-92 transition-colors group">
+                <button
+                  type="button"
+                  className="ml-auto p-2 active:scale-92 transition-colors group"
+                  onClick={handleBookmarkClick}
+                >
                   <Bookmark
                     size={22}
                     className="text-main-color group-hover:text-main-color group-hover:scale-120 transition-all cursor-pointer"
@@ -440,15 +464,17 @@ export function PostView() {
               <div className="w-full rounded-3xl border border-main-color bg-default-color p-4 flex flex-col gap-2">
                 <textarea
                   className="w-full rounded-xl border border-zinc-300 p-3 focus:outline-none focus:ring-1 focus:ring-main-color resize-none"
-                  placeholder="Adicione um comentário..."
+                  placeholder={isAuthenticated ? 'Adicione um comentário...' : 'Faça login para comentar'}
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
+                  disabled={!isAuthenticated}
                 />
 
                 <div className="flex justify-end">
                   <button
                     className="bg-main-color text-white px-4 py-2 rounded-xl hover:bg-main-color/90 transition-colors cursor-pointer"
                     onClick={handleAddComment}
+                    disabled={!isAuthenticated}
                   >
                     Comentar
                   </button>

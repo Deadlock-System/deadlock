@@ -4,6 +4,7 @@ import { AppError } from '../utils/AppError';
 
 export type SignInInput = { email: string; password: string };
 export type SignInResponse = void;
+export type LogoutResponse = void;
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -11,10 +12,10 @@ function resolveApiBaseUrl() {
   try {
     const api = new URL(env.apiURL);
     if (
-      typeof window !== 'undefined' &&
-      window.location.hostname === 'localhost' &&
-      api.hostname === 'localhost' &&
-      api.port === '3000'
+      typeof window !== "undefined" &&
+      window.location.hostname === "localhost" &&
+      api.hostname === "localhost" &&
+      api.port === "3000"
     ) {
       return `${window.location.origin}/api`;
     }
@@ -41,21 +42,21 @@ async function request<T>(params: {
   body?: Record<string, unknown>;
 }): Promise<T> {
   const baseUrl = resolveApiBaseUrl();
-  const method = params.method ?? (params.body === undefined ? 'GET' : 'POST');
-  const hasBody = params.body !== undefined && method !== 'GET';
+  const method = params.method ?? (params.body === undefined ? "GET" : "POST");
+  const hasBody = params.body !== undefined && method !== "GET";
 
   let response: Response;
 
   try {
     response = await fetch(`${baseUrl}${params.path}`, {
       method,
-      headers: hasBody ? { 'Content-Type': 'application/json' } : undefined,
+      headers: hasBody ? { "Content-Type": "application/json" } : undefined,
       body: hasBody ? JSON.stringify(params.body) : undefined,
-      credentials: 'include',
+      credentials: "include",
     });
   } catch (error: unknown) {
     throw new AppError({
-      code: 'NETWORK_ERROR',
+      code: "NETWORK_ERROR",
       status: 0,
       details: {
         message: error instanceof Error ? error.message : String(error),
@@ -93,14 +94,27 @@ export function useSignIn() {
   });
 }
 
+async function logoutRequest(): Promise<LogoutResponse> {
+  return request<LogoutResponse>({
+    path: "/auth/logout",
+    method: "POST",
+  });
+}
+
+export function useLogout() {
+  return useMutation<void, AppError, void>({
+    mutationFn: logoutRequest,
+  });
+}
+
 export function getGithubLoginUrl() {
   const baseUrl = resolveApiBaseUrl();
-  if (baseUrl.endsWith('/api')) return `${baseUrl}/auth/github`;
+  if (baseUrl.endsWith("/api")) return `${baseUrl}/auth/github`;
   return `${env.apiURL}/auth/github`;
 }
 
 export function getGoogleLoginUrl() {
   const baseUrl = resolveApiBaseUrl();
-  if (baseUrl.endsWith('/api')) return `${baseUrl}/auth/google`;
+  if (baseUrl.endsWith("/api")) return `${baseUrl}/auth/google`;
   return `${env.apiURL}/auth/google`;
 }
