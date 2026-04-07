@@ -158,19 +158,6 @@ export default function Login() {
                     </span>
                     <span>Sign in with Google</span>
                   </a>
-                  <button
-                    type="button"
-                    className="loginOauthFallback"
-                    onClick={() => {
-                      setFormMessage({
-                        type: 'error',
-                        text: 'Configure VITE_GOOGLE_CLIENT_ID para habilitar o Google',
-                      });
-                    }}
-                    disabled={isSubmitting}
-                  >
-                    Sign in with Google
-                  </button>
                 </>
               ) : null}
 
